@@ -11,19 +11,65 @@ android {
         targetSdk 33
         versionCode 1
         versionName "1.0"
-
+        multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
+        }
+        externalNativeBuild {
+            cmake {
+                cppFlags "-std=c++14 -fexceptions -frtti"
+                arguments "-DANDROID_STL=c++_shared"
+            }
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    packagingOptions {
+        exclude 'AndroidManifest.xml'
+        exclude 'lib/arm64-v8a/libcardioDecider.so'
+        exclude 'lib/arm64-v8a/libcardioRecognizer.so'
+        exclude 'lib/arm64-v8a/libcardioRecognizer_tegra2.so'
+        exclude 'lib/arm64-v8a/libopencv_core.so'
+        exclude 'lib/arm64-v8a/libopencv_imgproc.so'
+        exclude 'lib/armeabi/libcardioDecider.so'
+        exclude 'lib/armeabi-v7a/libcardioDecider.so'
+        exclude 'lib/armeabi-v7a/libcardioRecognizer.so'
+        exclude 'lib/armeabi-v7a/libcardioRecognizer_tegra2.so'
+        exclude 'lib/armeabi-v7a/libopencv_core.so'
+        exclude 'lib/armeabi-v7a/libopencv_imgproc.so'
+        exclude 'lib/mips/libcardioDecider.so'
+        exclude 'lib/x86/libcardioDecider.so'
+        exclude 'lib/x86/libcardioRecognizer.so'
+        exclude 'lib/x86/libcardioRecognizer_tegra2.so'
+        exclude 'lib/x86/libopencv_core.so'
+        exclude 'lib/x86/libopencv_imgproc.so'
+        exclude 'lib/x86_64/libcardioDecider.so'
+        exclude 'lib/x86_64/libcardioRecognizer.so'
+        exclude 'lib/x86_64/libcardioRecognizer_tegra2.so'
+        exclude 'lib/x86_64/libopencv_core.so'
+        exclude 'lib/x86_64/libopencv_imgproc.so'
+        pickFirst 'lib/*/libc++_shared.so'
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86_64/libjsc.so'
+        pickFirst 'lib/arm64-v8a/libjsc.so'
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'lib/x86/libc++_shared.so'
+        pickFirst 'META-INF/NOTICE'
+        pickFirst 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/MANIFEST.MF'
     }
 }
 
@@ -33,10 +79,11 @@ dependencies {
     implementation 'com.google.android.material:material:1.9.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    implementation "androidx.multidex:multidex:2.0.1"
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
-
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
     implementation 'org.linphone:linphone-sdk-android:4.4.35'
-    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
 }
