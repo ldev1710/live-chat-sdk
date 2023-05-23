@@ -30,7 +30,7 @@ public class Factory {
         MifoneCoreHandle.cancelCall();
     }
 
-    public static void acceptCall(Call call){
-        MifoneCoreHandle.acceptCall(call);
+    public static void acceptCall(){
+        MifoneCoreHandle.acceptCall();
     }
 }

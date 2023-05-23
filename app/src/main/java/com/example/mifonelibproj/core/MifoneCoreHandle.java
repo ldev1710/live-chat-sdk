@@ -148,8 +148,9 @@ public class MifoneCoreHandle{
         MifonePreferences.instance().setContext(context);
     }
 
-    public static void acceptCall(org.linphone.core.Call call){
-        org.linphone.core.CallParams callParams =  MifoneManager.mCore.createCallParams(call);
+    public static void acceptCall(){
+        org.linphone.core.Call call = mCore.getCurrentCall();
+        org.linphone.core.CallParams callParams =  mCore.createCallParams(call);
         MifoneManager.mCore.acceptCallWithParams(call,callParams);
     }
     public static void registerListener(MifoneCoreListener mifoneCoreListener){
