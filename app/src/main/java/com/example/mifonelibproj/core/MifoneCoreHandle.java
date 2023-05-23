@@ -60,7 +60,6 @@ public class MifoneCoreHandle{
     private static IResponseAPIs iResponseAPIs;
     private static Context mContext;
     private static User mUser;
-    private static MifoneCore mifoneCore;
     private static ConfigMifoneCore mConfigMifoneCore;
     private static final String defaultDomain = "mifone.vn/mitek";
     public static final String TAG = "DEBUGLISTENER";
@@ -69,10 +68,6 @@ public class MifoneCoreHandle{
         mUser = new User("luongdien1211@gmail.com","Luongdien1211@","sf");
         mConfigMifoneCore = configMifoneCore;
 
-    }
-
-    public static MifoneCore getMifoneCore(){
-        return mifoneCore;
     }
 
     public static void initMifoneCore(Context context, ConfigMifoneCore configMifoneCore) {
@@ -120,11 +115,13 @@ public class MifoneCoreHandle{
 
             @Override
             public void onCallStateChanged(Core core, org.linphone.core.Call call, org.linphone.core.Call.State state, String message) {
-                Log.d(TAG, "onCallStateChanged: "+message);
                 if (state == org.linphone.core.Call.State.End || state == org.linphone.core.Call.State.Released) {
                     State stateMifone = new State(state);
                     MifoneCoreHandle.mifoneCoreListener.onIncomingCall(stateMifone,message);
-                }
+                } else if(state == org.linphone.core.Call.State.IncomingReceived || state == org.linphone.core.Call.State.IncomingEarlyMedia){
+                    State stateMifone = new State(state);
+                    MifoneCoreHandle.mifoneCoreListener.onIncomingCall(stateMifone,"Incoming Call Received");
+                } else Log.d(TAG, "onCallStateChanged: "+message);
             }
 
             @Override
