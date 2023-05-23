@@ -1,5 +1,7 @@
 package com.example.mifonelibproj.core;
 
+import static com.example.mifonelibproj.util.MifoneManager.mCore;
+
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -137,7 +139,7 @@ public class MifoneCoreHandle{
             }
         };
         MifoneManager.getInstance().startLibLinphone(true,mListener);
-        MifoneManager.mCore.enableMic(true);
+        mCore.enableMic(true);
         Intent intent = new Intent(context, MyAlarmReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -146,6 +148,10 @@ public class MifoneCoreHandle{
         MifonePreferences.instance().setContext(context);
     }
 
+    public static void acceptCall(org.linphone.core.Call call){
+        org.linphone.core.CallParams callParams =  MifoneManager.mCore.createCallParams(call);
+        MifoneManager.mCore.acceptCallWithParams(call,callParams);
+    }
     public static void registerListener(MifoneCoreListener mifoneCoreListener){
         MifoneCoreHandle.mifoneCoreListener = mifoneCoreListener;
     }
@@ -222,7 +228,7 @@ public class MifoneCoreHandle{
         return MifoneManager.getInstance().getAccountCreator();
     }
     private static void reloadAccountCreatorConfig(String path) {
-        Core core = MifoneManager.mCore;
+        Core core = mCore;
         if (core != null) {
             core.loadConfigFromXml(path);
             AccountCreator accountCreator = getAccountCreator();
@@ -233,7 +239,7 @@ public class MifoneCoreHandle{
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private static void signIn(APIsResponse result, String secret) {
-        Core core = MifoneManager.mCore;
+        Core core = mCore;
         if (core != null) {
             Log.d("TAG", "signIn: reloaded!@");
             reloadDefaultAccountCreatorConfig();
@@ -259,7 +265,7 @@ public class MifoneCoreHandle{
             if (useMiphoneDefaultValues) {
                 org.linphone.core.tools.Log.i(
                         "[Assistant] Default domain found for generic connection, reloading configuration");
-                MifoneManager.mCore.loadConfigFromXml(MifonePreferences.instance().getMifoneDynamicConfigFile());
+                mCore.loadConfigFromXml(MifonePreferences.instance().getMifoneDynamicConfigFile());
             } else {
                 org.linphone.core.tools.Log.i("[Assistant] Third party domain found, keeping default values");
             }
@@ -272,7 +278,7 @@ public class MifoneCoreHandle{
             if (useMiphoneDefaultValues) {
                 // Restore default values
                 org.linphone.core.tools.Log.i("[Assistant] Restoring default assistant configuration");
-                MifoneManager.mCore.loadConfigFromXml(MifonePreferences.instance().getDefaultDynamicConfigFile());
+                mCore.loadConfigFromXml(MifonePreferences.instance().getDefaultDynamicConfigFile());
             } else {
 
                 if (proxyConfig != null) {
@@ -286,8 +292,8 @@ public class MifoneCoreHandle{
                 proxyConfig.setRoute(mProxy);
             }
         }
-        MifoneManager.mCore.addProxyConfig(proxyConfig);
-        MifoneManager.mCore.setDefaultProxyConfig(proxyConfig);
+        mCore.addProxyConfig(proxyConfig);
+        mCore.setDefaultProxyConfig(proxyConfig);
 //        MifoneManager.mCore.start();
         Log.d(TAG, "createProxyConfigAndLeaveAssistant: started");
         MifonePreferences.instance().firstLaunchSuccessful();

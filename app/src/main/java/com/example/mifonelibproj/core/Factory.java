@@ -5,6 +5,8 @@ import android.content.Context;
 import com.example.mifonelibproj.listener.MifoneCoreListener;
 import com.example.mifonelibproj.model.other.ConfigMifoneCore;
 
+import org.linphone.core.Call;
+
 
 public class Factory {
 
@@ -26,5 +28,9 @@ public class Factory {
 
     public static void cancelCall(){
         MifoneCoreHandle.cancelCall();
+    }
+
+    public static void acceptCall(Call call){
+        MifoneCoreHandle.acceptCall(call);
     }
 }
