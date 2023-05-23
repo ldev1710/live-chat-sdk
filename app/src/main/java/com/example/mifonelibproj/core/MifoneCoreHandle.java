@@ -79,7 +79,7 @@ public class MifoneCoreHandle{
             @Override
             public void onCallLogUpdated(Core lc, CallLog newcl) {
                 super.onCallLogUpdated(lc, newcl);
-                Log.d(TAG, "onCallLogUpdated: "+newcl.getErrorInfo());
+                Log.d(TAG, "onCallLogUpdated: "+newcl.getErrorInfo().toString());
             }
 
             @Override
