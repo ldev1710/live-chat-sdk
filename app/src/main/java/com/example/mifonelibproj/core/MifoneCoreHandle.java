@@ -14,6 +14,7 @@ import com.example.mifonelibproj.api.Common;
 import com.example.mifonelibproj.api.IResponseAPIs;
 import com.example.mifonelibproj.call.CallManager;
 import com.example.mifonelibproj.listener.MifoneCoreListener;
+import com.example.mifonelibproj.model.other.CallLogState;
 import com.example.mifonelibproj.model.other.ConfigMifoneCore;
 import com.example.mifonelibproj.model.other.Privileges;
 import com.example.mifonelibproj.model.other.ProfileUser;
@@ -79,7 +80,9 @@ public class MifoneCoreHandle{
             @Override
             public void onCallLogUpdated(Core lc, CallLog newcl) {
                 super.onCallLogUpdated(lc, newcl);
-                Log.d(TAG, "onCallLogUpdated: "+newcl.getErrorInfo().toString());
+                Log.d(TAG, "onCallLogUpdated: ");
+                CallLogState callLogState = new CallLogState(newcl.getDir().toInt());
+                MifoneCoreHandle.mifoneCoreListener.onCallLog(callLogState,callLogState.getMessage());
             }
 
             @Override
