@@ -33,4 +33,8 @@ public class Factory {
     public static void acceptCall(){
         MifoneCoreHandle.acceptCall();
     }
+
+    public static void sendDtms(int numb){
+        MifoneCoreHandle.sendDtms(numb);
+    }
 }

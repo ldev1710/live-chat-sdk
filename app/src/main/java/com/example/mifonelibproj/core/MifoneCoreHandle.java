@@ -238,6 +238,10 @@ public class MifoneCoreHandle{
         }
     }
 
+    public static void sendDtms(int numb){
+        mCore.getCurrentCall().sendDtmf(String.valueOf(numb).charAt(0));
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     private static void signIn(APIsResponse result, String secret) {
         Core core = mCore;
