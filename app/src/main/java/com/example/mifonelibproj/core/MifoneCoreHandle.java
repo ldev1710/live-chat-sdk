@@ -242,6 +242,11 @@ public class MifoneCoreHandle{
         mCore.getCurrentCall().sendDtmf(String.valueOf(numb).charAt(0));
     }
 
+    public static void declineCall(){
+        org.linphone.core.Call call = mCore.getCurrentCall();
+        call.terminate();
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     private static void signIn(APIsResponse result, String secret) {
         Core core = mCore;

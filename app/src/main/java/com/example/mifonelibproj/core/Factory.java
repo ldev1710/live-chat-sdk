@@ -31,7 +31,9 @@ public class Factory {
     public static void acceptCall(){
         MifoneCoreHandle.acceptCall();
     }
-
+    public static void declineCall(){
+        MifoneCoreHandle.declineCall();
+    }
     public static void sendDtms(int numb){
         MifoneCoreHandle.sendDtms(numb);
     }
