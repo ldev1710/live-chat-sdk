@@ -78,17 +78,6 @@ public class MifoneCoreHandle{
         mContext = context;
         new MifoneContext(mContext);
         mListener = new CoreListenerStub() {
-            @Override
-            public void onCallLogUpdated(Core lc, CallLog newcl) {
-                super.onCallLogUpdated(lc, newcl);
-                Log.d(TAG, "onCallLogUpdated: ");
-            }
-
-            @Override
-            public void onAuthenticationRequested(Core lc, AuthInfo authInfo, AuthMethod method) {
-                super.onAuthenticationRequested(lc, authInfo, method);
-                Log.d(TAG, "onAuthenticationRequested: "+method.toInt());
-            }
 
             @Override
             public void onCallStatsUpdated(Core lc, org.linphone.core.Call call, CallStats stats) {
@@ -97,32 +86,10 @@ public class MifoneCoreHandle{
             }
 
             @Override
-            public void onConfiguringStatus(Core lc, ConfiguringState status, String message) {
-                super.onConfiguringStatus(lc, status, message);
-                Log.d(TAG, "onConfiguringStatus: "+message);
-            }
-
-            @Override
-            public void onPublishStateChanged(Core lc, Event lev, PublishState state) {
-                super.onPublishStateChanged(lc, lev, state);
-                Log.d(TAG, "onPublishStateChanged: "+state.toInt());
-            }
-
-            @Override
-            public void onGlobalStateChanged(Core lc, GlobalState gstate, String message) {
-                super.onGlobalStateChanged(lc, gstate, message);
-                Log.d(TAG, "onGlobalStateChanged: "+message);
-            }
-
-            @Override
             public void onCallStateChanged(Core core, org.linphone.core.Call call, org.linphone.core.Call.State state, String message) {
-                if (state == org.linphone.core.Call.State.End || state == org.linphone.core.Call.State.Released) {
-                    State stateMifone = new State(state);
-                    MifoneCoreHandle.mifoneCoreListener.onEndCall(stateMifone,message);
-                } else if(state == org.linphone.core.Call.State.IncomingReceived || state == org.linphone.core.Call.State.IncomingEarlyMedia){
-                    State stateMifone = new State(state);
-                    MifoneCoreHandle.mifoneCoreListener.onIncomingCall(stateMifone,"Incoming Call Received");
-                } else Log.d(TAG, "onCallStateChanged: "+message);
+                Log.d(TAG, "onCallStateChanged: "+message);
+                State stateMifone = new State(state);
+                MifoneCoreHandle.mifoneCoreListener.onCallStateChanged(stateMifone,message);
             }
 
             @Override
@@ -131,11 +98,6 @@ public class MifoneCoreHandle{
                 Log.d(TAG, "onRegistrationStateChanged: "+message+", "+cstate);
                 com.example.mifonelibproj.model.other.RegistrationState registrationStateMifone = new com.example.mifonelibproj.model.other.RegistrationState(cstate.toInt());
                 MifoneCoreHandle.mifoneCoreListener.onRegistrationStateChanged(registrationStateMifone,message);
-            }
-
-            @Override
-            public void onLogCollectionUploadStateChanged(Core core, Core.LogCollectionUploadState state, String info) {
-
             }
         };
         MifoneManager.getInstance().startLibLinphone(true,mListener);
