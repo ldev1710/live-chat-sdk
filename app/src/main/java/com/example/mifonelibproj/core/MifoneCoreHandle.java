@@ -205,8 +205,14 @@ public class MifoneCoreHandle{
     }
 
     public static void declineCall(){
-        org.linphone.core.Call call = mCore.getCurrentCall();
-        call.terminate();
+        org.linphone.core.Call[] calls = mCore.getCalls();
+        for(org.linphone.core.Call call : calls){
+            if(call.getState().toInt() == State.IncomingEarlyMedia || call.getState().toInt() == State.IncomingReceived){
+                call.terminate();
+                return;
+            }
+        }
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
