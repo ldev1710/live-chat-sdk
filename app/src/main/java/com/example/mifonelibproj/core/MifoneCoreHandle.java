@@ -118,7 +118,7 @@ public class MifoneCoreHandle{
             public void onCallStateChanged(Core core, org.linphone.core.Call call, org.linphone.core.Call.State state, String message) {
                 if (state == org.linphone.core.Call.State.End || state == org.linphone.core.Call.State.Released) {
                     State stateMifone = new State(state);
-                    MifoneCoreHandle.mifoneCoreListener.onIncomingCall(stateMifone,message);
+                    MifoneCoreHandle.mifoneCoreListener.onEndCall(stateMifone,message);
                 } else if(state == org.linphone.core.Call.State.IncomingReceived || state == org.linphone.core.Call.State.IncomingEarlyMedia){
                     State stateMifone = new State(state);
                     MifoneCoreHandle.mifoneCoreListener.onIncomingCall(stateMifone,"Incoming Call Received");

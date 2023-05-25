@@ -7,6 +7,7 @@ import com.example.mifonelibproj.model.other.State;
 public interface MifoneCoreListener {
     public void onResultConfigAccount(boolean isSuccess,String message);
     public void onIncomingCall(State state, String message);
+    public void onEndCall(State state, String message);
     public void onRegistrationStateChanged(RegistrationState state, String message);
     public void onError(String message);
     public void onExpiredAccessToken();

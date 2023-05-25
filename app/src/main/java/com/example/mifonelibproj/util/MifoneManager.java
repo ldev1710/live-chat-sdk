@@ -144,16 +144,6 @@ public class MifoneManager implements SensorEventListener {
         mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         mTelephonyManager = (TelephonyManager) c.getSystemService(Context.TELEPHONY_SERVICE);
         mHasLastCallSasBeenRejected = false;
-//        mCallManager = new CallManager(c);
-//        mCallReceiver = new OutGoingCallReceive();
-//        File f = new File(mUserCertsPath);
-//        if (!f.exists()) {
-//            if (!f.mkdir()) {
-//                Log.e("[Manager] " + mUserCertsPath + " can't be created.");
-//            }
-//        }
-//
-//        mMediaScanner = new MediaScanner(c);
         mCoreListener =
                 new CoreListenerStub() {
                     @SuppressLint("Wakelock")
