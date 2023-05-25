@@ -4,14 +4,12 @@ import android.content.Context;
 
 import com.example.mifonelibproj.listener.MifoneCoreListener;
 import com.example.mifonelibproj.model.other.ConfigMifoneCore;
-
-import org.linphone.core.Call;
-
+import com.example.mifonelibproj.model.other.User;
 
 public class Factory {
 
-    public static void createMifoneCore(Context context, ConfigMifoneCore configMifoneCore){
-        MifoneCoreHandle.initMifoneCore(context,configMifoneCore);
+    public static void createMifoneCore(Context context, ConfigMifoneCore configMifoneCore, User user){
+        MifoneCoreHandle.initMifoneCore(context,configMifoneCore,user);
     }
 
     public static void registerListener(MifoneCoreListener mifoneCoreListener){

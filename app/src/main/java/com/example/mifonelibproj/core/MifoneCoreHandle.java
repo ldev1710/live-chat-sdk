@@ -65,15 +65,15 @@ public class MifoneCoreHandle{
     private static ConfigMifoneCore mConfigMifoneCore;
     private static final String defaultDomain = "mifone.vn/mitek";
     public static final String TAG = "DEBUGLISTENER";
-    private MifoneCoreHandle(ConfigMifoneCore configMifoneCore) {
+    private MifoneCoreHandle(ConfigMifoneCore configMifoneCore,User user) {
 //        mUser = new User("hieu@mitek2020.vn","Hieu@mitek2020.vn","sf");
-        mUser = new User("luongdien1211@gmail.com","Luongdien1211@","sf");
+        mUser = user;
         mConfigMifoneCore = configMifoneCore;
 
     }
 
-    public static void initMifoneCore(Context context, ConfigMifoneCore configMifoneCore) {
-        mInstance = new MifoneCoreHandle(configMifoneCore);
+    public static void initMifoneCore(Context context, ConfigMifoneCore configMifoneCore,User user) {
+        mInstance = new MifoneCoreHandle(configMifoneCore,user);
         iResponseAPIs = Common.getAPIs();
         mContext = context;
         new MifoneContext(mContext);
