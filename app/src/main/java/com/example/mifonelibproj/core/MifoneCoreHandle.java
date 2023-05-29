@@ -123,7 +123,16 @@ public class MifoneCoreHandle{
         CallManager callManager = new CallManager(mContext);
         callManager.cancelCall();
     }
+    public static void holdCall(){
+        mCore.getCurrentCall().pause();
+    }
 
+    public static void resumeCall(){
+        mCore.getCurrentCall().resume();
+    }
+    public static void transfer(String phoneNumber){
+        mCore.getCurrentCall().transfer(phoneNumber);
+    }
     public static void configMifoneCore(){
         if (mUser==null){
             mifoneCoreListener.onResultConfigAccount(false,"Email and password of user not be configured");

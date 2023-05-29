@@ -16,6 +16,16 @@ public class Factory {
         MifoneCoreHandle.registerListener(mifoneCoreListener);
     }
 
+    public static void holdCall(){
+        MifoneCoreHandle.holdCall();
+    }
+    public static void resumCall(){
+        MifoneCoreHandle.resumeCall();
+    }
+    public static void transfer(String phoneNumber){
+        MifoneCoreHandle.transfer(phoneNumber);
+    }
+
     public static void configCore(){
         MifoneCoreHandle.configMifoneCore();
     }
