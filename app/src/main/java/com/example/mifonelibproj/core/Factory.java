@@ -22,6 +22,10 @@ public class Factory {
     public static void resumCall(){
         MifoneCoreHandle.resumeCall();
     }
+
+    public  static String getNumbPhoneCallIn(){
+        return MifoneCoreHandle.getNumbPhoneCallIn();
+    }
     public static void transfer(String phoneNumber){
         MifoneCoreHandle.transfer(phoneNumber);
     }

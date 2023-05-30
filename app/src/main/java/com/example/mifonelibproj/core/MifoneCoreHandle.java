@@ -116,6 +116,10 @@ public class MifoneCoreHandle{
         MifonePreferences.instance().setContext(context);
     }
 
+    public static String getNumbPhoneCallIn(){
+        return mCore.getCurrentCall().getRemoteAddress().getUsername();
+    }
+
     public static void acceptCall(){
         org.linphone.core.Call call = mCore.getCurrentCall();
         org.linphone.core.CallParams callParams =  mCore.createCallParams(call);
