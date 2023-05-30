@@ -82,7 +82,7 @@ public class MifoneCoreHandle{
             @Override
             public void onCallStatsUpdated(Core lc, org.linphone.core.Call call, CallStats stats) {
                 super.onCallStatsUpdated(lc, call, stats);
-                Log.d(TAG, "onCallStatsUpdated: ");
+                Log.d(TAG, "onCallStatsUpdated: call: "+call.getState().toInt()+", state: "+stats.getIceState().toInt());
             }
 
             @Override
