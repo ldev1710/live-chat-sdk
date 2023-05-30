@@ -86,6 +86,12 @@ public class MifoneCoreHandle{
             }
 
             @Override
+            public void onTransferStateChanged(Core lc, org.linphone.core.Call transfered, org.linphone.core.Call.State newCallState) {
+                super.onTransferStateChanged(lc, transfered, newCallState);
+                Log.d(TAG, "onTransferStateChanged: transfer state: "+transfered.getTransferState().toInt()+", call state: "+newCallState.toInt());
+            }
+
+            @Override
             public void onCallStateChanged(Core core, org.linphone.core.Call call, org.linphone.core.Call.State state, String message) {
                 Log.d(TAG, "onCallStateChanged: "+message);
                 State stateMifone = new State(state);
