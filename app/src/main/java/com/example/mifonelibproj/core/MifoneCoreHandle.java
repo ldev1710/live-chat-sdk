@@ -138,7 +138,13 @@ public class MifoneCoreHandle{
     }
 
     public static void resumeCall(){
-        mCore.getCurrentCall().resume();
+        org.linphone.core.Call[] calls = mCore.getCalls();
+        for(org.linphone.core.Call call : calls){
+           if(call.getState() == org.linphone.core.Call.State.Paused) {
+               call.resume();
+               return;
+           }
+        }
     }
     public static void transfer(String phoneNumber){
         mCore.getCurrentCall().transfer(phoneNumber);
