@@ -6,7 +6,7 @@ import com.example.mifonelibproj.listener.MifoneCoreListener;
 import com.example.mifonelibproj.model.other.ConfigMifoneCore;
 import com.example.mifonelibproj.model.other.User;
 
-public class Factory {
+public class FactoryMifone {
 
     public static void createMifoneCore(Context context, ConfigMifoneCore configMifoneCore, User user){
         MifoneCoreHandle.initMifoneCore(context,configMifoneCore,user);
@@ -19,7 +19,7 @@ public class Factory {
     public static void holdCall(){
         MifoneCoreHandle.holdCall();
     }
-    public static void resumCall(){
+    public static void resumeCall(){
         MifoneCoreHandle.resumeCall();
     }
 
