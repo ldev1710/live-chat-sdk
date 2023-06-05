@@ -1,7 +1,6 @@
 package com.example.mifonelibproj.core;
 
 import static com.example.mifonelibproj.util.MifoneManager.mCore;
-
 import android.Manifest;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -9,15 +8,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
-
 import androidx.annotation.RequiresApi;
-
 import com.example.mifonelibproj.api.Common;
 import com.example.mifonelibproj.api.IResponseAPIs;
 import com.example.mifonelibproj.call.CallManager;
 import com.example.mifonelibproj.listener.MifoneCoreListener;
 import com.example.mifonelibproj.model.other.ConfigMifoneCore;
-import com.example.mifonelibproj.model.other.Privileges;
 import com.example.mifonelibproj.model.other.ProfileUser;
 import com.example.mifonelibproj.model.other.State;
 import com.example.mifonelibproj.model.other.UpdateTokenFirebase;
@@ -30,27 +26,16 @@ import com.example.mifonelibproj.util.MifoneManager;
 import com.example.mifonelibproj.util.MifonePreferences;
 import com.example.mifonelibproj.util.Permission;
 import com.example.mifonelibproj.util.SharePrefUtils;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.linphone.core.AccountCreator;
-import org.linphone.core.AuthInfo;
-import org.linphone.core.AuthMethod;
-import org.linphone.core.CallLog;
 import org.linphone.core.CallStats;
-import org.linphone.core.ConfiguringState;
 import org.linphone.core.Core;
 import org.linphone.core.CoreListenerStub;
-import org.linphone.core.Event;
-import org.linphone.core.GlobalState;
 import org.linphone.core.ProxyConfig;
-import org.linphone.core.PublishState;
 import org.linphone.core.RegistrationState;
 import org.linphone.core.TransportType;
-
-import java.util.List;
 import java.util.Locale;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -171,8 +156,6 @@ public class MifoneCoreHandle{
                                 String secret = result.getSecret();
                                 signIn(result, secret);
                                 Common.groupId = result.getGroupId();
-                                String user_log_id = result.getUser_log_id();
-                                List<Privileges> arrayPrivileges = result.getPrivileges();
                                 mifoneCoreListener.onResultConfigAccount(true,"Config Successful!");
                             } else {
                                 mifoneCoreListener.onResultConfigAccount(false,"Username and Password are wrong! Please check again, "+result.getMessage());

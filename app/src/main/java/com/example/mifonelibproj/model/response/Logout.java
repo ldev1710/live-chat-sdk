@@ -1,10 +1,9 @@
 package com.example.mifonelibproj.model.response;
 
-//import androidx.annotation.Keep;
-
+import androidx.annotation.Keep;
 import com.google.gson.annotations.SerializedName;
 
-//@Keep
+@Keep
 public class Logout {
     @SerializedName("code")
     private int code;

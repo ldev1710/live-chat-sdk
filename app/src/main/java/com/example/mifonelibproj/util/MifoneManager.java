@@ -45,87 +45,20 @@ public class MifoneManager implements SensorEventListener {
     private final String mCallLogDatabaseFile;
     private final String mFriendsDatabaseFile;
     private final String mUserCertsPath;
-    private MyCallStateListener myCallStateListener;
-    private Context mContext;
-//    private AndroidAudioManager mAudioManager;
-//    private CallManager mCallManager;
-    private final PowerManager mPowerManager;
-    private final ConnectivityManager mConnectivityManager;
-    private TelephonyManager mTelephonyManager;
-    private PhoneStateListener mPhoneStateListener;
     private WakeLock mProximityWakelock;
     private final SensorManager mSensorManager;
     private final Sensor mProximity;
-//    private final MediaScanner mMediaScanner;
-    private Timer mTimer, mAutoAnswerTimer;
-    private BroadcastReceiver mCallReceiver;
+    private Context mContext;
     private final MifonePreferences mPrefs;
     public static Core mCore;
     private CoreListenerStub mCoreListener;
     private AccountCreator mAccountCreator;
-    private AccountCreatorListenerStub mAccountCreatorListener;
     private IntentFilter mCallIntentFilter;
     private boolean mExited;
     private boolean mCallGsmON;
     private boolean mProximitySensingEnabled;
-    private boolean mHasLastCallSasBeenRejected;
     private Runnable mIterateRunnable;
-
-    @RequiresApi(api = Build.VERSION_CODES.S)
-    class MyCallStateListener extends TelephonyCallback implements TelephonyCallback.CallStateListener{
-        @Override
-        public void onCallStateChanged(int state) {
-            android.util.Log.d("TAG", "onCallStateChanged: Changed"+state);
-            switch (state) {
-                case TelephonyManager.CALL_STATE_OFFHOOK:
-                    Log.i("[Manager] Phone state is off hook");
-                    setCallGsmON(true);
-                    break;
-                case TelephonyManager.CALL_STATE_RINGING:
-                    Log.i("[Manager] Phone state is ringing");
-                    setCallGsmON(true);
-                    break;
-                case TelephonyManager.CALL_STATE_IDLE:
-                    Log.i("[Manager] Phone state is idle");
-                    setCallGsmON(false);
-                    break;
-            }
-        }
-    }
-    public void registerListenPhoneState(Context c){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-        {
-//            if(ContextCompat.checkSelfPermission(c, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED){
-//                myCallStateListener = new MyCallStateListener();
-//                mTelephonyManager.registerTelephonyCallback(c.getMainExecutor(), myCallStateListener);
-//                android.util.Log.d("TAG", "MifoneManager: registed");
-//            }
-        } else {
-            mPhoneStateListener =
-                    new PhoneStateListener() {//For Android 10 or lower
-                        @Override
-                        public void onCallStateChanged(int state, String phoneNumber) {
-                            switch (state) {
-                                case TelephonyManager.CALL_STATE_OFFHOOK:
-                                    Log.i("[Manager] Phone state is off hook");
-                                    setCallGsmON(true);
-                                    break;
-                                case TelephonyManager.CALL_STATE_RINGING:
-                                    Log.i("[Manager] Phone state is ringing");
-                                    setCallGsmON(true);
-                                    break;
-                                case TelephonyManager.CALL_STATE_IDLE:
-                                    Log.i("[Manager] Phone state is idle");
-                                    setCallGsmON(false);
-                                    break;
-                            }
-                        }
-                    };
-            Log.i("[Manager] Registering phone state listener");
-            mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_CALL_STATE);
-        }
-    }
-
+    private final PowerManager mPowerManager;
     public MifoneManager(Context c) {
         android.util.Log.d("TAG", "MifoneManager: Contructor is called");
         mExited = false;
@@ -138,12 +71,8 @@ public class MifoneManager implements SensorEventListener {
 
         mPrefs = MifonePreferences.instance();
         mPowerManager = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
-        mConnectivityManager =
-                (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
         mSensorManager = (SensorManager) c.getSystemService(Context.SENSOR_SERVICE);
         mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-        mTelephonyManager = (TelephonyManager) c.getSystemService(Context.TELEPHONY_SERVICE);
-        mHasLastCallSasBeenRejected = false;
         mCoreListener =
                 new CoreListenerStub() {
                     @SuppressLint("Wakelock")
@@ -170,16 +99,6 @@ public class MifoneManager implements SensorEventListener {
                         } else if (state == Call.State.IncomingReceived
                                 && (MifonePreferences.instance().isAutoAnswerEnabled())
                                 && !getCallGsmON()) {
-//                            MifoneUtils.dispatchOnUIThreadAfter(
-//                                    () -> {
-//                                        if (mCore != null) {
-//                                            if (mCore.getCallsNb() > 0) {
-//                                                mCallManager.acceptCall(call);
-//                                                mAudioManager.routeAudioToEarPiece();
-//                                            }
-//                                        }
-//                                    },
-//                                    mPrefs.getAutoAnswerTime());
                         } else if (state == Call.State.End || state == Call.State.Error) {
                             if (mCore.getCallsNb() == 0) {
                                 enableProximitySensing(false);
@@ -201,14 +120,10 @@ public class MifoneManager implements SensorEventListener {
 
                     @Override
                     public void onFriendListCreated(Core core, FriendList list) {
-//                        if (MifoneContext.isReady()) {
-//                            list.addListener(ContactsManager.getInstance());
-//                        }
                     }
 
                     @Override
                     public void onFriendListRemoved(Core core, FriendList list) {
-//                        list.removeListener(ContactsManager.getInstance());
                     }
                 };
     }
@@ -227,57 +142,6 @@ public class MifoneManager implements SensorEventListener {
         return manager;
     }
 
-    public synchronized void destroy() {
-        destroyManager();
-        // Wait for Manager to destroy everything before setting mExited to true
-        // Otherwise some objects might crash during their own destroy if they try to call
-        // MifoneManager.getCore(), for example to unregister a listener
-        mExited = true;
-    }
-
-    public void restartCore() {
-        Log.w("[Manager] Restarting Core");
-        mCore.stop();
-        mCore.start();
-    }
-
-    private void destroyCore() {
-        Log.w("[Manager] Destroying Core");
-        if (MifonePreferences.instance() != null) {
-            // We set network reachable at false before destroying the Core
-            // to not send a register with expires at 0
-            if (MifonePreferences.instance().isPushNotificationEnabled()) {
-                Log.w(
-                        "[Manager] Setting network reachability to False to prevent unregister and allow incoming push notifications");
-                mCore.setNetworkReachable(false);
-            }
-        }
-        mCore.stop();
-        mCore.removeListener(mCoreListener);
-    }
-
-    private synchronized void destroyManager() {
-        Log.w("[Manager] Destroying Manager");
-//        changeStatusToOffline();
-
-        if (mTelephonyManager != null) {
-            Log.i("[Manager] Unregistering phone state listener");
-            mTelephonyManager.listen(mPhoneStateListener, PhoneStateListener.LISTEN_NONE);
-        }
-
-//        if (mCallManager != null) mCallManager.destroy();
-//        if (mMediaScanner != null) mMediaScanner.destroy();
-//        if (mAudioManager != null) mAudioManager.destroy();
-
-        if (mTimer != null) mTimer.cancel();
-        if (mAutoAnswerTimer != null) mAutoAnswerTimer.cancel();
-
-        if (mCore != null) {
-            // destroyCore();
-            mCore = null;
-        }
-    }
-
     public void startLibLinphone(boolean isPush, CoreListenerStub listener) {
         try {
             android.util.Log.d(TAG, "onCreate: trigger");
@@ -286,7 +150,6 @@ public class MifoneManager implements SensorEventListener {
                             .createCore(
                                     mPrefs.getMifoneDefaultConfig(),
                                     mPrefs.getMifoneFactoryConfig(),
-//                                    null,
                                     mContext);
             android.util.Log.d(TAG, "onCreate: created");
             mCoreListener = listener;
@@ -313,10 +176,6 @@ public class MifoneManager implements SensorEventListener {
                             MifoneUtils.dispatchOnUIThread(mIterateRunnable);
                         }
                     };
-            // use schedule instead of scheduleAtFixedRate to avoid iterate from being call in burst
-            // after cpu wake up
-            mTimer = new Timer("Mifone scheduler");
-            mTimer.schedule(lTask, 0, 20);
 
             configureCore();
         } catch (Exception e) {
@@ -324,17 +183,10 @@ public class MifoneManager implements SensorEventListener {
         }
         mCallIntentFilter = new IntentFilter("android.intent.action.ACTION_NEW_OUTGOING_CALL");
         mCallIntentFilter.setPriority(99999999);
-//        mCallReceiver = new OutGoingCallReceive();
-        try {
-            mContext.registerReceiver(mCallReceiver, mCallIntentFilter);
-        } catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
     }
 
     private synchronized void configureCore() {
         Log.i("[Manager] Configuring Core");
-//        mAudioManager = new AndroidAudioManager(mContext);
 
         mCore.setZrtpSecretsFile(mBasePath + "/zrtp_secrets");
 
@@ -376,7 +228,6 @@ public class MifoneManager implements SensorEventListener {
 
 
         mAccountCreator = mCore.createAccountCreator(MifonePreferences.instance().getXmlrpcUrl());
-        mAccountCreator.addListener(mAccountCreatorListener);
         mCallGsmON = false;
 
         Log.i("[Manager] Core configured");
@@ -386,125 +237,10 @@ public class MifoneManager implements SensorEventListener {
 
     public AccountCreator getAccountCreator() {
         if (mAccountCreator == null) {
-//            Log.w("[Manager] Account creator shouldn't be null !");
             mAccountCreator = mCore.createAccountCreator(null);
-//            mAccountCreator = mCore.createAccountCreator(MifonePreferences.instance().getXmlrpcUrl());
-            mAccountCreator.addListener(mAccountCreatorListener);
         }
         return mAccountCreator;
     }
-
-    public void isAccountWithAlias() {
-        if (mCore.getDefaultProxyConfig() != null) {
-            long now = new Timestamp(new Date().getTime()).getTime();
-            AccountCreator accountCreator = getAccountCreator();
-            if (MifonePreferences.instance().getLinkPopupTime() == null
-                    || Long.parseLong(MifonePreferences.instance().getLinkPopupTime()) < now) {
-                accountCreator.reset();
-                accountCreator.setUsername(
-                        MifonePreferences.instance()
-                                .getAccountUsername(
-                                        MifonePreferences.instance().getDefaultAccountIndex()));
-                accountCreator.isAccountExist();
-            }
-        } else {
-            MifonePreferences.instance().setLinkPopupTime(null);
-        }
-    }
-
-    private boolean isPresenceModelActivitySet() {
-        if (mCore != null) {
-            return mCore.getPresenceModel() != null
-                    && mCore.getPresenceModel().getActivity() != null;
-        }
-        return false;
-    }
-
-//    public void changeStatusToOnline() {
-//        if (mCore == null) return;
-//        PresenceModel model = mCore.createPresenceModel();
-//        model.setBasicStatus(PresenceBasicStatus.Open);
-//        mCore.setPresenceModel(model);
-//    }
-//
-//    public void changeStatusToOnThePhone() {
-//        if (mCore == null) return;
-//
-//        if (isPresenceModelActivitySet()
-//                && mCore.getPresenceModel().getActivity().getType()
-//                        != PresenceActivity.Type.OnThePhone) {
-//            mCore.getPresenceModel().getActivity().setType(PresenceActivity.Type.OnThePhone);
-//        } else if (!isPresenceModelActivitySet()) {
-//            PresenceModel model =
-//                    mCore.createPresenceModelWithActivity(PresenceActivity.Type.OnThePhone, null);
-//            mCore.setPresenceModel(model);
-//        }
-//    }
-//
-//    private void changeStatusToOffline() {
-//        if (mCore != null) {
-//            PresenceModel model = mCore.getPresenceModel();
-//            model.setBasicStatus(PresenceBasicStatus.Closed);
-//            mCore.setPresenceModel(model);
-//        }
-//    }
-//
-//    /* Tunnel stuff */
-//
-//    public void initTunnelFromConf() {
-//        if (!mCore.tunnelAvailable()) return;
-//
-//        NetworkInfo info = mConnectivityManager.getActiveNetworkInfo();
-//        Tunnel tunnel = mCore.getTunnel();
-//        tunnel.cleanServers();
-//        TunnelConfig config = mPrefs.getTunnelConfig();
-//        if (config.getHost() != null) {
-//            tunnel.addServer(config);
-//            manageTunnelServer(info);
-//        }
-//    }
-
-    private boolean isTunnelNeeded(NetworkInfo info) {
-        if (info == null) {
-            Log.i("[Manager] No connectivity: tunnel should be disabled");
-            return false;
-        }
-
-        String pref = mPrefs.getTunnelMode();
-
-        if ("always".equals(pref)) {
-            return true;
-        }
-
-        if (info.getType() != ConnectivityManager.TYPE_WIFI
-                && "3G_only".equals(pref)) {
-            Log.i("[Manager] Need tunnel: 'no wifi' connection");
-            return true;
-        }
-
-        return false;
-    }
-
-//    private void manageTunnelServer(NetworkInfo info) {
-//        if (mCore == null) return;
-//        if (!mCore.tunnelAvailable()) return;
-//        Tunnel tunnel = mCore.getTunnel();
-//
-//        Log.i("[Manager] Managing tunnel");
-//        if (isTunnelNeeded(info)) {
-//            Log.i("[Manager] Tunnel need to be activated");
-//            tunnel.setMode(Tunnel.Mode.Enable);
-//        } else {
-//            Log.i("[Manager] Tunnel should not be used");
-//            String pref = mPrefs.getTunnelMode();
-//            tunnel.setMode(Tunnel.Mode.Disable);
-//            if (getString(vn.mitek.mifone.R.string.tunnel_mode_entry_value_auto).equals(pref)) {
-//                tunnel.setMode(Tunnel.Mode.Auto);
-//            }
-//        }
-//    }
-
-    /* Proximity sensor stuff */
 
     public void enableProximitySensing(boolean enable) {
         if (enable) {
@@ -579,11 +315,5 @@ public class MifoneManager implements SensorEventListener {
         }
     }
 
-    private String getString(int key) {
-        return mContext.getString(key);
-    }
 
-    public void lastCallSasRejected(boolean rejected) {
-        mHasLastCallSasBeenRejected = rejected;
-    }
 }
