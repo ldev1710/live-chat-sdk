@@ -34,6 +34,16 @@
 -keep public class com.example.mifonelibproj.model.other.State{
     *;
 }
+
+# Retrofit2
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+-keepclassmembernames interface * {
+    @retrofit2.http.* <methods>;
+}
+
+# GSON Annotations
 -keepclassmembers,allowobfuscation class * {
   @com.google.gson.annotations.SerializedName <fields>;
 }
