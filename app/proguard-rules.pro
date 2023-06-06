@@ -31,6 +31,26 @@
     *;
 }
 
+-keep public class com.example.mifonelibproj.model.other.Privileges{
+    *;
+}
+
+-keep public class com.example.mifonelibproj.model.other.ProfileUser{
+    *;
+}
+
+-keep public class com.example.mifonelibproj.model.other.UpdateTokenFirebase{
+    *;
+}
+
+-keep public class com.example.mifonelibproj.model.response.APIsResponse{
+    *;
+}
+
+-keep public class com.example.mifonelibproj.model.response.Logout{
+    *;
+}
+
 -keep public class com.example.mifonelibproj.model.other.State{
     *;
 }
