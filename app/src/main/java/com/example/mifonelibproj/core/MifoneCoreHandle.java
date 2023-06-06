@@ -51,7 +51,6 @@ public class MifoneCoreHandle{
     private static final String defaultDomain = "mifone.vn/mitek";
     public static final String TAG = "DEBUGLISTENER";
     private MifoneCoreHandle(ConfigMifoneCore configMifoneCore,User user) {
-//        mUser = new User("hieu@mitek2020.vn","Hieu@mitek2020.vn","sf");
         mUser = user;
         mConfigMifoneCore = configMifoneCore;
 
