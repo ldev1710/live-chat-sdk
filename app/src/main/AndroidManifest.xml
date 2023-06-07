@@ -15,7 +15,7 @@
     <!--CALL STATE PERMISSION -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
-    <!-- BLUETOOTH PERMISSION-->
+    <!--    BLUETOOTH PERMISSION-->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
 
