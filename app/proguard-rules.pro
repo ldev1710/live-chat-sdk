@@ -63,9 +63,12 @@
 -keepclassmembernames interface * {
     @retrofit2.http.* <methods>;
 }
-
+-keep public class * extends *
+-keep public class * implements org.linphone.core.CoreListener
+-keep interface * { *; }
 -keep class org.linphone.** { *; }
 -keepattributes Signature
+
 -keep class com.squareup.okhttp.** { *; }
 -keep interface com.squareup.okhttp.** { *; }
 -dontwarn com.squareup.okhttp.**
