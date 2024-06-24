@@ -11,48 +11,17 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
--keep public class com.example.mifonelibproj.core.FactoryMifone{
+-keep public class com.test.excute.core.MiCallFactory{
    *;
 }
 
--keep public interface com.example.mifonelibproj.listener.MifoneCoreListener{
+-keep public interface com.test.excute.listener.publisher.MiCallStateListener{
     *;
 }
 
 
 
--keep public class com.example.mifonelibproj.model.other.ConfigMifoneCore{
-    *;
-}
-
--keep public class com.example.mifonelibproj.model.other.RegistrationState{
-    *;
-}
-
--keep public class com.example.mifonelibproj.model.other.User{
-    *;
-}
-
--keep public class com.example.mifonelibproj.model.other.Privileges{
-    *;
-}
-
--keep public class com.example.mifonelibproj.model.other.ProfileUser{
-    *;
-}
-
--keep public class com.example.mifonelibproj.model.other.UpdateTokenFirebase{
-    *;
-}
--keep public class com.example.mifonelibproj.model.response.APIsResponse{
-    *;
-}
-
--keep public class com.example.mifonelibproj.model.response.Logout{
-    *;
-}
-
--keep public class com.example.mifonelibproj.model.other.State{
+-keep public class com.test.excute.model.*{
     *;
 }
 
