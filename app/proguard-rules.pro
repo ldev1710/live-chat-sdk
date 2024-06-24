@@ -21,7 +21,13 @@
 
 
 
--keep public class com.test.excute.model.*{
+-keep public class com.test.excute.model.CallStateEnum{
+    *;
+}
+-keep public class com.test.excute.model.RegistrationStateEnum{
+    *;
+}
+-keep public class com.test.excute.model.account.MiCallAccount{
     *;
 }
 
