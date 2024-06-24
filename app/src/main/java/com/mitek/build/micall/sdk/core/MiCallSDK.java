@@ -1,11 +1,10 @@
-package com.test.excute.core;
+package com.mitek.build.micall.sdk.core;
 
-import com.test.excute.listener.publisher.MiCallStateListener;
-import com.test.excute.model.RegistrationStateEnum;
-import com.test.excute.model.account.MiCallAccount;
-import com.test.excute.util.MiCallLog;
+import com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener;
+import com.mitek.build.micall.sdk.model.RegistrationStateEnum;
+import com.mitek.build.micall.sdk.model.account.MiCallAccount;
+import com.mitek.build.micall.sdk.util.MiCallLog;
 
-import org.pjsip.pjsua2.Account;
 import org.pjsip.pjsua2.AccountConfig;
 import org.pjsip.pjsua2.AuthCredInfo;
 import org.pjsip.pjsua2.Endpoint;
@@ -22,6 +21,7 @@ public class MiCallSDK {
     private static boolean isAvailable = false;
     private static Endpoint ep = new Endpoint();
     private static AccountSDK accountSDK = new AccountSDK();
+    private static AccountConfig acf = new AccountConfig();
     static private List<MiCallStateListener> observe;
     static void init(String apiKey){
         MiCallSDK.apiKey = apiKey;
@@ -38,6 +38,7 @@ public class MiCallSDK {
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TCP,transportConfig);
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP,transportConfig);
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TLS,transportConfig);
+            ep.libStart();
         } catch (Exception e) {
             MiCallLog.logE(e.getMessage());
         }
@@ -74,8 +75,6 @@ public class MiCallSDK {
         }
     }
     static void register(MiCallAccount acc){
-        Account account = new Account();
-        AccountConfig acf = new AccountConfig();
         String accountId = "sip:"+acc.getUsername()+"@"+acc.getDomain();
         String registrar = "sip:"+ acc.getDomain();
         String proxy = "sip:"+ acc.getProxy()+":"+ acc.getPort();
@@ -91,9 +90,13 @@ public class MiCallSDK {
                 password
         ));
         acf.getNatConfig().setIceEnabled(true);
+        acf.getVideoConfig().setAutoTransmitOutgoing(true);
+        acf.getVideoConfig().setAutoShowIncoming(true);
         try {
-            account.modify(acf);
+            accountSDK.create(acf);
+            accountSDK.modify(acf);
         } catch (Exception e) {
+            accountSDK.delete();
             MiCallLog.logE(e.getMessage());
         }
     }

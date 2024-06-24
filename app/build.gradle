@@ -4,7 +4,7 @@ plugins {
 
 android {
     compileSdk 33
-
+    namespace "com.test.excute"
     defaultConfig {
 //        applicationId "com.example.mifonelibproj"
         minSdk 24

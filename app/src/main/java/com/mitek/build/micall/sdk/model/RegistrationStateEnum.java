@@ -1,4 +1,4 @@
-package com.test.excute.model;
+package com.mitek.build.micall.sdk.model;
 
 public enum RegistrationStateEnum {
     REGISTERED,

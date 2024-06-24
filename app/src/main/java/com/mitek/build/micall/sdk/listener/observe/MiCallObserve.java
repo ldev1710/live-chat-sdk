@@ -1,7 +1,7 @@
-package com.test.excute.listener.observe;
+package com.mitek.build.micall.sdk.listener.observe;
 
-import com.test.excute.model.CallStateEnum;
-import com.test.excute.model.RegistrationStateEnum;
+import com.mitek.build.micall.sdk.model.CallStateEnum;
+import com.mitek.build.micall.sdk.model.RegistrationStateEnum;
 
 public interface MiCallObserve {
     void onRegistrationStateChanged(RegistrationStateEnum state, String message);

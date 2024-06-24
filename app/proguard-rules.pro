@@ -11,23 +11,23 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
--keep public class com.test.excute.core.MiCallFactory{
+-keep public class com.mitek.build.micall.sdk.core.MiCallFactory{
    *;
 }
 
--keep public interface com.test.excute.listener.publisher.MiCallStateListener{
+-keep public interface com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener{
     *;
 }
 
 -keep class org.pjsip.pjsua2** {*;}
 
--keep public class com.test.excute.model.CallStateEnum{
+-keep public class com.mitek.build.micall.sdk.model.CallStateEnum{
     *;
 }
--keep public class com.test.excute.model.RegistrationStateEnum{
+-keep public class com.mitek.build.micall.sdk.model.RegistrationStateEnum{
     *;
 }
--keep public class com.test.excute.model.account.MiCallAccount{
+-keep public class com.mitek.build.micall.sdk.model.account.MiCallAccount{
     *;
 }
 
@@ -39,7 +39,6 @@
     @retrofit2.http.* <methods>;
 }
 -keep public class * extends *
--keep public class * implements org.linphone.core.CoreListener
 -keep interface * { *; }
 -keep class org.linphone.** { *; }
 -keepattributes Signature
