@@ -14,4 +14,12 @@ public class MiCallFactory {
     public static void addMiCallListener(MiCallStateListener listener){
         MiCallSDK.addMiCallListener(listener);
     }
+
+    public static void makeCall(String phone){
+        MiCallSDK.makeCall(phone);
+    }
+
+    public static void hangup(){
+        MiCallSDK.hangup();
+    }
 }

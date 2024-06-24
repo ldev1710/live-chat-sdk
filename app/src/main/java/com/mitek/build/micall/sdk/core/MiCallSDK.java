@@ -1,5 +1,7 @@
 package com.mitek.build.micall.sdk.core;
 
+import android.util.Log;
+
 import com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener;
 import com.mitek.build.micall.sdk.model.RegistrationStateEnum;
 import com.mitek.build.micall.sdk.model.account.MiCallAccount;
@@ -7,10 +9,13 @@ import com.mitek.build.micall.sdk.util.MiCallLog;
 
 import org.pjsip.pjsua2.AccountConfig;
 import org.pjsip.pjsua2.AuthCredInfo;
+import org.pjsip.pjsua2.Call;
+import org.pjsip.pjsua2.CallOpParam;
 import org.pjsip.pjsua2.Endpoint;
 import org.pjsip.pjsua2.EpConfig;
 import org.pjsip.pjsua2.OnRegStateParam;
 import org.pjsip.pjsua2.TransportConfig;
+import org.pjsip.pjsua2.pjsip_status_code;
 import org.pjsip.pjsua2.pjsip_transport_type_e;
 
 import java.util.ArrayList;
@@ -21,6 +26,8 @@ public class MiCallSDK {
     private static boolean isAvailable = false;
     private static Endpoint ep = new Endpoint();
     private static AccountSDK accountSDK = new AccountSDK();
+    private static CallSDK callSDK;
+    private static MiCallAccount currAccount;
     private static AccountConfig acf = new AccountConfig();
     static private List<MiCallStateListener> observe;
     static void init(String apiKey){
@@ -34,7 +41,7 @@ public class MiCallSDK {
             epConfig.getUaConfig().setUserAgent("MiCall SDK");
             ep.libInit(epConfig);
             TransportConfig transportConfig = new TransportConfig();
-            transportConfig.setPort(6000);
+            transportConfig.setPort(5969);
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TCP,transportConfig);
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP,transportConfig);
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TLS,transportConfig);
@@ -43,10 +50,38 @@ public class MiCallSDK {
             MiCallLog.logE(e.getMessage());
         }
     }
+
+    public static Endpoint getEp(){
+        return ep;
+    }
+
     static void addMiCallListener(MiCallStateListener listener){
         if(observe==null) observe = new ArrayList<>();
         observe.add(listener);
     }
+
+    static void makeCall(String phone){
+        callSDK = new CallSDK(accountSDK,-1);
+        CallOpParam param = new CallOpParam(true);
+        String buddyUri = "sip:"+phone+"@"+currAccount.getDomain();
+        try {
+            callSDK.makeCall(buddyUri,param);
+        } catch (Exception e) {
+            callSDK.delete();
+            MiCallLog.logE(e.getMessage());
+        }
+    }
+
+    static void hangup(){
+        CallOpParam param = new CallOpParam();
+        param.setStatusCode(pjsip_status_code.PJSIP_SC_DECLINE);
+        try {
+            callSDK.answer(param);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void observingRegState(OnRegStateParam prm){
         String message;
         RegistrationStateEnum stateEnum;
@@ -75,6 +110,7 @@ public class MiCallSDK {
         }
     }
     static void register(MiCallAccount acc){
+        currAccount = acc;
         String accountId = "sip:"+acc.getUsername()+"@"+acc.getDomain();
         String registrar = "sip:"+ acc.getDomain();
         String proxy = "sip:"+ acc.getProxy()+":"+ acc.getPort();
@@ -90,6 +126,9 @@ public class MiCallSDK {
                 password
         ));
         acf.getNatConfig().setIceEnabled(true);
+        acf.getCallConfig().setTimerMinSESec(90);
+        acf.getCallConfig().setTimerUse(15);
+        acf.getCallConfig().setTimerSessExpiresSec(90);
         acf.getVideoConfig().setAutoTransmitOutgoing(true);
         acf.getVideoConfig().setAutoShowIncoming(true);
         try {

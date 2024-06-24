@@ -21,13 +21,7 @@
 
 -keep class org.pjsip.** {*;}
 
--keep public class com.mitek.build.micall.sdk.model.CallStateEnum{
-    *;
-}
--keep public class com.mitek.build.micall.sdk.model.RegistrationStateEnum{
-    *;
-}
--keep public class com.mitek.build.micall.sdk.model.account.MiCallAccount{
+-keep public class com.mitek.build.micall.sdk.model.**{
     *;
 }
 
