@@ -14,15 +14,6 @@ android {
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
-        ndk {
-            abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
-        }
-        externalNativeBuild {
-            cmake {
-                cppFlags "-std=c++14 -fexceptions -frtti"
-                arguments "-DANDROID_STL=c++_shared"
-            }
-        }
     }
 
     buildTypes {
@@ -34,42 +25,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
-    }
-    packagingOptions {
-        exclude 'AndroidManifest.xml'
-        exclude 'lib/arm64-v8a/libcardioDecider.so'
-        exclude 'lib/arm64-v8a/libcardioRecognizer.so'
-        exclude 'lib/arm64-v8a/libcardioRecognizer_tegra2.so'
-        exclude 'lib/arm64-v8a/libopencv_core.so'
-        exclude 'lib/arm64-v8a/libopencv_imgproc.so'
-        exclude 'lib/armeabi/libcardioDecider.so'
-        exclude 'lib/armeabi-v7a/libcardioDecider.so'
-        exclude 'lib/armeabi-v7a/libcardioRecognizer.so'
-        exclude 'lib/armeabi-v7a/libcardioRecognizer_tegra2.so'
-        exclude 'lib/armeabi-v7a/libopencv_core.so'
-        exclude 'lib/armeabi-v7a/libopencv_imgproc.so'
-        exclude 'lib/mips/libcardioDecider.so'
-        exclude 'lib/x86/libcardioDecider.so'
-        exclude 'lib/x86/libcardioRecognizer.so'
-        exclude 'lib/x86/libcardioRecognizer_tegra2.so'
-        exclude 'lib/x86/libopencv_core.so'
-        exclude 'lib/x86/libopencv_imgproc.so'
-        exclude 'lib/x86_64/libcardioDecider.so'
-        exclude 'lib/x86_64/libcardioRecognizer.so'
-        exclude 'lib/x86_64/libcardioRecognizer_tegra2.so'
-        exclude 'lib/x86_64/libopencv_core.so'
-        exclude 'lib/x86_64/libopencv_imgproc.so'
-        pickFirst 'lib/*/libc++_shared.so'
-        pickFirst 'lib/x86/libc++_shared.so'
-        pickFirst 'lib/x86_64/libjsc.so'
-        pickFirst 'lib/arm64-v8a/libjsc.so'
-        pickFirst 'lib/x86/libc++_shared.so'
-        pickFirst 'lib/x86/libc++_shared.so'
-        pickFirst 'lib/x86/libc++_shared.so'
-        pickFirst 'META-INF/NOTICE'
-        pickFirst 'META-INF/LICENSE'
-        exclude 'META-INF/DEPENDENCIES.txt'
-        exclude 'META-INF/MANIFEST.MF'
     }
 }
 
