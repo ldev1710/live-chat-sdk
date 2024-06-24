@@ -19,7 +19,7 @@
     *;
 }
 
-
+-keep class org.pjsip.pjsua2** {*;}
 
 -keep public class com.test.excute.model.CallStateEnum{
     *;
