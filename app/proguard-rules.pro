@@ -19,7 +19,7 @@
     *;
 }
 
--keep class org.pjsip.pjsua2** {*;}
+-keep class org.pjsip.** {*;}
 
 -keep public class com.mitek.build.micall.sdk.model.CallStateEnum{
     *;
