@@ -1,6 +1,7 @@
 package com.mitek.build.micall.sdk.listener.publisher;
 
 import com.mitek.build.micall.sdk.listener.observe.MiCallObserve;
+import com.mitek.build.micall.sdk.model.Call;
 import com.mitek.build.micall.sdk.model.CallStateEnum;
 import com.mitek.build.micall.sdk.model.RegistrationStateEnum;
 
@@ -11,8 +12,6 @@ public class MiCallStateListener implements MiCallObserve {
     }
 
     @Override
-    public void onCallStateChanged(CallStateEnum state, String message) {
-
-//        ll
+    public void onCallStateChanged(CallStateEnum state, Call call) {
     }
 }
