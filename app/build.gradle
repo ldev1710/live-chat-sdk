@@ -33,7 +33,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-apply from: "$rootDir/gradle-mvn-push.gradle"
+//apply from: "$rootDir/gradle-mvn-push.gradle"
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
