@@ -1,19 +1,25 @@
-plugins {
-    id 'com.android.library'
-}
+//plugins {
+//    id 'com.android.library'
+//}
+apply plugin: 'com.android.library'
 
 android {
     compileSdk 33
-    namespace "com.test.excute"
+    namespace "com.mitek.build.micall.sdk"
     defaultConfig {
 //        applicationId "com.example.mifonelibproj"
         minSdk 24
         targetSdk 33
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+        libraryVariants.all { variant ->
+            variant.outputs.all { output ->
+                outputFileName = "${archivesBaseName}_${variant.name}_${defaultConfig.versionName}.aar"
+            }
+        }
     }
 
     buildTypes {
@@ -27,7 +33,7 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-
+apply from: "$rootDir/gradle-mvn-push.gradle"
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.6.1'

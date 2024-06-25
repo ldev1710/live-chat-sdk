@@ -19,8 +19,6 @@
     *;
 }
 
--keep class org.pjsip.** {*;}
-
 -keep public class com.mitek.build.micall.sdk.model.**{
     *;
 }
@@ -34,7 +32,6 @@
 }
 -keep public class * extends *
 -keep interface * { *; }
--keep class org.linphone.** { *; }
 -keepattributes Signature
 
 -keep class com.squareup.okhttp.** { *; }

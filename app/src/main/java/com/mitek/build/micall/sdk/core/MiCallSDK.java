@@ -9,6 +9,7 @@ import com.mitek.build.micall.sdk.model.CallStateEnum;
 import com.mitek.build.micall.sdk.model.RegistrationStateEnum;
 import com.mitek.build.micall.sdk.model.account.MiCallAccount;
 import com.mitek.build.micall.sdk.util.MiCallLog;
+import com.mitek.build.micall.sdk.util.MiCallNormalize;
 
 import org.pjsip.pjsua2.AccountConfig;
 import org.pjsip.pjsua2.AudDevManager;
@@ -118,6 +119,17 @@ public class MiCallSDK {
         observe.add(listener);
     }
 
+    public static Call getCurrentCall(){
+        try {
+            return new Call(
+                    callSDK.getId(),
+                    MiCallNormalize.normalizeRemoteUri(callSDK.getInfo().getRemoteUri())
+            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     static void makeCall(String phone){
         callSDK = new CallSDK(accountSDK,-1);
         CallOpParam param = new CallOpParam(true);
@@ -135,7 +147,7 @@ public class MiCallSDK {
         audioManager.setSpeakerphoneOn(isEnable);
     }
 
-    static void hangup(){
+    static void decline(){
         CallOpParam param = new CallOpParam();
         param.setStatusCode(pjsip_status_code.PJSIP_SC_BUSY_HERE);
         try {
@@ -144,6 +156,17 @@ public class MiCallSDK {
             throw new RuntimeException(e);
         }
     }
+
+    static void hangup(){
+        CallOpParam param = new CallOpParam();
+        param.setStatusCode(pjsip_status_code.PJSIP_SC_REQUEST_TERMINATED);
+        try {
+            callSDK.hangup(param);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     static void answer(){
         CallOpParam param = new CallOpParam();
         param.setStatusCode(pjsip_status_code.PJSIP_SC_OK);
@@ -157,9 +180,11 @@ public class MiCallSDK {
     public static void observingCallState(CallStateEnum callStateEnum, CallSDK newCall){
         callSDK = newCall;
         try {
-            String rawExt = newCall.getInfo().getRemoteUri();
-            String ext = rawExt.substring(rawExt.indexOf("sip:")+4,rawExt.indexOf("@"));
-            Call call = new Call(newCall.getId(),ext);
+
+            Call call = new Call(
+                    newCall.getId(),
+                    MiCallNormalize.normalizeRemoteUri(newCall.getInfo().getRemoteUri())
+            );
             MiCallLog.logI("onCallStateChanged: "+callStateEnum.toString());
             for(MiCallStateListener ob : MiCallSDK.observe){
                 ob.onCallStateChanged(callStateEnum,call);

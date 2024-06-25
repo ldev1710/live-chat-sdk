@@ -23,11 +23,9 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" /> <!-- Needed to be able to pick images from SD card to share in chat message -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- Needed to store received images if the user wants to -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- Needed to use our own Contact editor -->
     <uses-permission android:name="android.permission.WRITE_CONTACTS" /> <!-- Needed to route the audio to the bluetooth headset if available -->
-    <uses-permission android:name="android.permission.BLUETOOTH" /> <!-- Needed to pre fill the wizard email field (only if enabled in custom settings) -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- Needed by the SDK to be able to use WifiManager.MulticastLock -->
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" /> <!-- Required for contacts sync account -->

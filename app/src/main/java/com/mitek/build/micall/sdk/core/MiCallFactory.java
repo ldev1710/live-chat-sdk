@@ -3,6 +3,7 @@ package com.mitek.build.micall.sdk.core;
 import android.content.Context;
 
 import com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener;
+import com.mitek.build.micall.sdk.model.Call;
 import com.mitek.build.micall.sdk.model.account.MiCallAccount;
 
 public class MiCallFactory {
@@ -35,6 +36,14 @@ public class MiCallFactory {
 
     public static void makeCall(String phone){
         MiCallSDK.makeCall(phone);
+    }
+
+    public static Call getCurrentCall(){
+        return MiCallSDK.getCurrentCall();
+    }
+
+    public static void decline(){
+        MiCallSDK.decline();
     }
 
     public static void hangup(){
