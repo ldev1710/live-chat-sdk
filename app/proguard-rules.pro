@@ -11,11 +11,16 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
--keepclassmembers class com.mitek.build.micall.sdk.core.MiCallFactory{
-   *;
+-keep public class com.mitek.build.micall.sdk.core.MiCallFactory{
+   public *;
 }
 
 -keep public class com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener{
+    public *;
+}
+# Obfuscate tất cả các class trong package này
+-repackageclasses
+-keepclassmembers class com.mitek.build.micall.sdk.core.** {
     *;
 }
 
@@ -23,10 +28,10 @@
     *;
 }
 # Loại bỏ các thông tin gỡ lỗi và các phương thức không cần thiết
--dontobfuscate
--dontoptimize
--dontpreverify
--keepattributes Exceptions, InnerClasses, Signature, Deprecated, SourceFile, LineNumberTable, *Annotation*, EnclosingMethod
+#-dontobfuscate
+#-dontoptimize
+#-dontpreverify
+#-keepattributes Exceptions, InnerClasses, Signature, Deprecated, SourceFile, LineNumberTable, *Annotation*, EnclosingMethod
 #-keepclassmembers public class * {
 #    public protected *;
 #}
