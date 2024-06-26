@@ -22,6 +22,21 @@
 -keep public class com.mitek.build.micall.sdk.model.**{
     *;
 }
+
+# Loại bỏ các thông tin gỡ lỗi và các phương thức không cần thiết
+-dontobfuscate
+-dontoptimize
+-dontpreverify
+-keepattributes Exceptions, InnerClasses, Signature, Deprecated, SourceFile, LineNumberTable, *Annotation*, EnclosingMethod
+-keepclassmembers public class * {
+    public protected *;
+}
+
+# Chèn các runtime exceptions vào nội dung phương thức
+-assumenosideeffects class com.mitek.build.micall.sdk.core.** {
+    <methods>;
+}
+
 -obfuscationdictionary proguard_dict.txt
 # Retrofit2
 -keepclasseswithmembers class * {
