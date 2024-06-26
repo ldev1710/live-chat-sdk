@@ -5,18 +5,18 @@ import static com.mitek.build.micall.sdk.core.MiCallSDK.observingCallState;
 import com.mitek.build.micall.sdk.model.CallStateEnum;
 import com.mitek.build.micall.sdk.util.MiCallLog;
 
-import org.pjsip.pjsua2.Account;
-import org.pjsip.pjsua2.AudDevManager;
-import org.pjsip.pjsua2.AudioMedia;
-import org.pjsip.pjsua2.Call;
-import org.pjsip.pjsua2.CallMediaInfo;
-import org.pjsip.pjsua2.CallMediaInfoVector;
-import org.pjsip.pjsua2.Media;
-import org.pjsip.pjsua2.OnCallMediaStateParam;
-import org.pjsip.pjsua2.OnCallStateParam;
-import org.pjsip.pjsua2.pjmedia_type;
-import org.pjsip.pjsua2.pjsip_inv_state;
-import org.pjsip.pjsua2.pjsua_call_media_status;
+import com.mitek.build.micall.sdk.core.module.model.Account;
+import com.mitek.build.micall.sdk.core.module.model.AudDevManager;
+import com.mitek.build.micall.sdk.core.module.model.AudioMedia;
+import com.mitek.build.micall.sdk.core.module.model.Call;
+import com.mitek.build.micall.sdk.core.module.model.CallMediaInfo;
+import com.mitek.build.micall.sdk.core.module.model.CallMediaInfoVector;
+import com.mitek.build.micall.sdk.core.module.model.Media;
+import com.mitek.build.micall.sdk.core.module.model.OnCallMediaStateParam;
+import com.mitek.build.micall.sdk.core.module.model.OnCallStateParam;
+import com.mitek.build.micall.sdk.core.module.model.pjmedia_type;
+import com.mitek.build.micall.sdk.core.module.model.pjsip_inv_state;
+import com.mitek.build.micall.sdk.core.module.model.pjsua_call_media_status;
 
 public class CallSDK extends Call {
     public CallSDK(Account acc, int call_id) {

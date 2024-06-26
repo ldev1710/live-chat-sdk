@@ -3,15 +3,14 @@ package com.mitek.build.micall.sdk.core;
 import static com.mitek.build.micall.sdk.core.MiCallSDK.observingCallState;
 import static com.mitek.build.micall.sdk.core.MiCallSDK.observingRegState;
 
+import com.mitek.build.micall.sdk.core.module.model.Account;
+import com.mitek.build.micall.sdk.core.module.model.CallOpParam;
+import com.mitek.build.micall.sdk.core.module.model.OnIncomingCallParam;
+import com.mitek.build.micall.sdk.core.module.model.OnInstantMessageParam;
+import com.mitek.build.micall.sdk.core.module.model.OnRegStateParam;
+import com.mitek.build.micall.sdk.core.module.model.pjsip_status_code;
 import com.mitek.build.micall.sdk.model.CallStateEnum;
 import com.mitek.build.micall.sdk.util.MiCallLog;
-
-import org.pjsip.pjsua2.Account;
-import org.pjsip.pjsua2.CallOpParam;
-import org.pjsip.pjsua2.OnIncomingCallParam;
-import org.pjsip.pjsua2.OnInstantMessageParam;
-import org.pjsip.pjsua2.OnRegStateParam;
-import org.pjsip.pjsua2.pjsip_status_code;
 
 public class AccountSDK extends Account {
     @Override

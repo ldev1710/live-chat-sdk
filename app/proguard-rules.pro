@@ -11,28 +11,18 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
--keep public class com.mitek.build.micall.sdk.core.MiCallFactory{
-   public *;
+-keepclassmembers class com.mitek.build.micall.sdk.core.MiCallFactory{
+   *;
 }
 
--keep public interface com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener{
+-keep public class com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener{
     *;
-}
-
-# Giữ lại lớp MiCallSDK và các phương thức công khai của nó để đảm bảo logic vẫn được thực thi
--keep class com.mitek.build.micall.sdk.core.MiCallSDK {
-    public *;
 }
 
 -keep public class com.mitek.build.micall.sdk.model.**{
     *;
 }
--keep public class org.pjsip.**{
-    *;
-}
-
 # Loại bỏ các thông tin gỡ lỗi và các phương thức không cần thiết
-# Làm xáo trộn và tối ưu hóa các phần còn lại
 -dontobfuscate
 -dontoptimize
 -dontpreverify
