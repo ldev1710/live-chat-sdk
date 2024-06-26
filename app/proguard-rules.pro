@@ -18,6 +18,9 @@
 -keep public class com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener{
     public *;
 }
+-keep public class org.pjsip.**{
+    *;
+}
 # Obfuscate tất cả các class trong package này
 -repackageclasses
 -keepclassmembers class com.mitek.build.micall.sdk.core.** {
