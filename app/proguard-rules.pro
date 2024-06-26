@@ -12,11 +12,16 @@
 #   public *;
 #}
 -keep public class com.mitek.build.micall.sdk.core.MiCallFactory{
-   *;
+   public *;
 }
 
 -keep public interface com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener{
     *;
+}
+
+# Giữ lại lớp MiCallSDK và các phương thức công khai của nó để đảm bảo logic vẫn được thực thi
+-keep class com.mitek.build.micall.sdk.core.MiCallSDK {
+    public *;
 }
 
 -keep public class com.mitek.build.micall.sdk.model.**{
@@ -27,18 +32,19 @@
 }
 
 # Loại bỏ các thông tin gỡ lỗi và các phương thức không cần thiết
+# Làm xáo trộn và tối ưu hóa các phần còn lại
 -dontobfuscate
 -dontoptimize
 -dontpreverify
 -keepattributes Exceptions, InnerClasses, Signature, Deprecated, SourceFile, LineNumberTable, *Annotation*, EnclosingMethod
--keepclassmembers public class * {
-    public protected *;
-}
+#-keepclassmembers public class * {
+#    public protected *;
+#}
 
 # Chèn các runtime exceptions vào nội dung phương thức
--assumenosideeffects class com.mitek.build.micall.sdk.core.** {
-    <methods>;
-}
+#-assumenosideeffects class com.mitek.build.micall.sdk.core.** {
+#    <methods>;
+#}
 
 -obfuscationdictionary proguard_dict.txt
 # Retrofit2
