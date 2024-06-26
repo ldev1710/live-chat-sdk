@@ -34,6 +34,10 @@ public class MiCallFactory {
         MiCallSDK.toggleMute(isMute);
     }
 
+    public static void unRegister(){
+        MiCallSDK.unRegister();
+    }
+
     public static void makeCall(String phone){
         MiCallSDK.makeCall(phone);
     }

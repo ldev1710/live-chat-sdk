@@ -36,13 +36,14 @@ import retrofit2.Retrofit;
 
 class MiCallSDK {
     private static String apiKey;
-    private static boolean isAvailable = false;
     private static Endpoint ep = new Endpoint();
     private static AccountSDK accountSDK = new AccountSDK();
     private static CallSDK callSDK;
     private static MiCallAccount currAccount;
     private static AccountConfig acf = new AccountConfig();
     static private List<MiCallStateListener> observe;
+    static private boolean isInitialized = false;
+    static private boolean isRegistered = false;
 
     static void init(String apiKey){
         MiCallSDK.apiKey = apiKey;
@@ -60,12 +61,30 @@ class MiCallSDK {
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP,transportConfig);
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TLS,transportConfig);
             ep.libStart();
+            isInitialized = true;
+        } catch (Exception e) {
+            MiCallLog.logE(e.getMessage());
+        }
+    }
+
+    private static boolean interValidate(){
+        if(!isInitialized || !isRegistered){
+            MiCallLog.logE("The library is not ready");
+            return false;
+        }
+        return true;
+    }
+
+    public static void unRegister(){
+        try {
+            if(interValidate()) accountSDK.setRegistration(false);
         } catch (Exception e) {
             MiCallLog.logE(e.getMessage());
         }
     }
 
     public static void toggleMute(boolean mute){
+        if(!interValidate()) return;
         try {
             CallInfo info = callSDK.getInfo();
             for (int i = 0; i < info.getMedia().size(); i++) {
@@ -94,8 +113,8 @@ class MiCallSDK {
     }
 
     public static void hold(){
+        if(!interValidate()) return;
         CallOpParam prm = new CallOpParam(true);
-
         try {
             callSDK.setHold(prm);
         } catch (Exception e) {
@@ -104,6 +123,7 @@ class MiCallSDK {
     }
 
     public static void unHold(){
+        if(!interValidate()) return;
         CallOpParam prm = new CallOpParam(true);
         prm.getOpt().setFlag(1);
         try {
@@ -118,11 +138,13 @@ class MiCallSDK {
     }
 
     static void addMiCallListener(MiCallStateListener listener){
+        if(!interValidate()) return;
         if(observe==null) observe = new ArrayList<>();
         observe.add(listener);
     }
 
     public static Call getCurrentCall(){
+        if(!interValidate()) return null;
         try {
             return new Call(
                     callSDK.getId(),
@@ -134,6 +156,7 @@ class MiCallSDK {
     }
 
     static void makeCall(String phone){
+        if(!interValidate()) return;
         callSDK = new CallSDK(accountSDK,-1);
         CallOpParam param = new CallOpParam(true);
         String buddyUri = "sip:"+phone+"@"+currAccount.getDomain();
@@ -146,11 +169,13 @@ class MiCallSDK {
     }
 
     static void toggleSpeaker(Context context,boolean isEnable){
+        if(!interValidate()) return;
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         audioManager.setSpeakerphoneOn(isEnable);
     }
 
     static void decline(){
+        if(!interValidate()) return;
         CallOpParam param = new CallOpParam();
         param.setStatusCode(pjsip_status_code.PJSIP_SC_BUSY_HERE);
         try {
@@ -161,6 +186,7 @@ class MiCallSDK {
     }
 
     static void hangup(){
+        if(!interValidate()) return;
         CallOpParam param = new CallOpParam();
         param.setStatusCode(pjsip_status_code.PJSIP_SC_REQUEST_TERMINATED);
         try {
@@ -171,6 +197,7 @@ class MiCallSDK {
     }
 
     static void answer(){
+        if(!interValidate()) return;
         CallOpParam param = new CallOpParam();
         param.setStatusCode(pjsip_status_code.PJSIP_SC_OK);
         try {
@@ -212,6 +239,7 @@ class MiCallSDK {
             if (prm.getCode() == 200) {
                 message += "Successful";
                 stateEnum = RegistrationStateEnum.REGISTERED;
+                isRegistered = true;
             } else {
                 message += "Failed";
                 stateEnum = RegistrationStateEnum.REGISTER_FAILED;
@@ -224,6 +252,10 @@ class MiCallSDK {
         }
     }
     static void register(MiCallAccount acc){
+        if(!isInitialized){
+            MiCallLog.logE("The library is not ready");
+            return;
+        }
         currAccount = acc;
         String accountId = "sip:"+acc.getUsername()+"@"+acc.getDomain();
         String registrar = "sip:"+ acc.getDomain();
