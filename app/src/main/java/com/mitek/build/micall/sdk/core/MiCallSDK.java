@@ -33,7 +33,8 @@ import java.util.List;
 
 import retrofit2.Retrofit;
 
-public class MiCallSDK {
+
+class MiCallSDK {
     private static String apiKey;
     private static boolean isAvailable = false;
     private static Endpoint ep = new Endpoint();
