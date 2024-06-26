@@ -22,7 +22,7 @@
 -keep public class com.mitek.build.micall.sdk.model.**{
     *;
 }
-
+-obfuscationdictionary proguard_dict.txt
 # Retrofit2
 -keepclasseswithmembers class * {
     @retrofit2.http.* <methods>;

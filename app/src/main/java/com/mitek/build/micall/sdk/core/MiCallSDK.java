@@ -31,6 +31,8 @@ import org.pjsip.pjsua2.pjsua_call_media_status;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Retrofit;
+
 public class MiCallSDK {
     private static String apiKey;
     private static boolean isAvailable = false;
@@ -180,7 +182,6 @@ public class MiCallSDK {
     public static void observingCallState(CallStateEnum callStateEnum, CallSDK newCall){
         callSDK = newCall;
         try {
-
             Call call = new Call(
                     newCall.getId(),
                     MiCallNormalize.normalizeRemoteUri(newCall.getInfo().getRemoteUri())
