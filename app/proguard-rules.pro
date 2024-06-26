@@ -22,6 +22,9 @@
 -keep public class com.mitek.build.micall.sdk.model.**{
     *;
 }
+-keep public class org.pjsip.**{
+    *;
+}
 
 # Loại bỏ các thông tin gỡ lỗi và các phương thức không cần thiết
 -dontobfuscate
