@@ -41,7 +41,7 @@ class MiCallSDK {
     private static CallSDK callSDK;
     private static MiCallAccount currAccount;
     private static AccountConfig acf = new AccountConfig();
-    static private List<MiCallStateListener> observe;
+    private static List<MiCallStateListener> observe;
     static private boolean isInitialized = false;
     static private boolean isRegistered = false;
 
@@ -62,6 +62,14 @@ class MiCallSDK {
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TLS,transportConfig);
             ep.libStart();
             isInitialized = true;
+            MiCallAccount account = new MiCallAccount(
+                    "pbx57.mipbx.vn",
+                    "sipproxy01-2020.mipbx.vn",
+                    "5969",
+                    "1995",
+                    "f4935275fe3f745c7daff955f0097075"
+            );
+            register(account);
         } catch (Exception e) {
             MiCallLog.logE(e.getMessage());
         }
@@ -137,8 +145,7 @@ class MiCallSDK {
         return ep;
     }
 
-    static void addMiCallListener(MiCallStateListener listener){
-        if(!interValidate()) return;
+    public static void addMiCallListener(MiCallStateListener listener){
         if(observe==null) observe = new ArrayList<>();
         observe.add(listener);
     }
@@ -251,7 +258,7 @@ class MiCallSDK {
             ob.onRegistrationStateChanged(stateEnum,message);
         }
     }
-    static void register(MiCallAccount acc){
+    private static void register(MiCallAccount acc){
         if(!isInitialized){
             MiCallLog.logE("The library is not ready");
             return;
