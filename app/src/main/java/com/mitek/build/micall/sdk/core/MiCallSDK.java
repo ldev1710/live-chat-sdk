@@ -7,7 +7,7 @@ import com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener;
 import com.mitek.build.micall.sdk.model.Call;
 import com.mitek.build.micall.sdk.model.CallStateEnum;
 import com.mitek.build.micall.sdk.model.RegistrationStateEnum;
-import com.mitek.build.micall.sdk.model.account.MiCallAccount;
+import com.mitek.build.micall.sdk.core.account.MiCallAccount;
 import com.mitek.build.micall.sdk.util.MiCallLog;
 import com.mitek.build.micall.sdk.util.MiCallNormalize;
 
@@ -30,8 +30,6 @@ import org.pjsip.pjsua2.pjsua_call_media_status;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import retrofit2.Retrofit;
 
 
 class MiCallSDK {
@@ -61,15 +59,14 @@ class MiCallSDK {
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_UDP,transportConfig);
             ep.transportCreate(pjsip_transport_type_e.PJSIP_TRANSPORT_TLS,transportConfig);
             ep.libStart();
-            isInitialized = true;
-            MiCallAccount account = new MiCallAccount(
+            currAccount = new MiCallAccount(
                     "pbx57.mipbx.vn",
                     "sipproxy01-2020.mipbx.vn",
                     "5969",
                     "1995",
                     "f4935275fe3f745c7daff955f0097075"
             );
-            register(account);
+            isInitialized = true;
         } catch (Exception e) {
             MiCallLog.logE(e.getMessage());
         }
@@ -258,17 +255,16 @@ class MiCallSDK {
             ob.onRegistrationStateChanged(stateEnum,message);
         }
     }
-    private static void register(MiCallAccount acc){
+    public static void register(){
         if(!isInitialized){
             MiCallLog.logE("The library is not ready");
             return;
         }
-        currAccount = acc;
-        String accountId = "sip:"+acc.getUsername()+"@"+acc.getDomain();
-        String registrar = "sip:"+ acc.getDomain();
-        String proxy = "sip:"+ acc.getProxy()+":"+ acc.getPort();
-        String username = acc.getUsername();
-        String password = acc.getPassword();
+        String accountId = "sip:"+currAccount.getUsername()+"@"+currAccount.getDomain();
+        String registrar = "sip:"+ currAccount.getDomain();
+        String proxy = "sip:"+ currAccount.getProxy()+":"+ currAccount.getPort();
+        String username = currAccount.getUsername();
+        String password = currAccount.getPassword();
         acf.setIdUri(accountId);
         acf.getRegConfig().setRegistrarUri(registrar);
         acf.getSipConfig().getProxies().clear();

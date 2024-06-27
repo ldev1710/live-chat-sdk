@@ -1,4 +1,4 @@
-package com.mitek.build.micall.sdk.model.account;
+package com.mitek.build.micall.sdk.core.account;
 
 public class MiCallAccount {
     String domain;
