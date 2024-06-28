@@ -78,7 +78,7 @@ public class CallSDK extends Call {
                 }
             }
         } catch (Exception e) {
-            MiCallLog.logE(e.getMessage());
+//            MiCallLog.logE(e.getMessage());
         }
     }
 }

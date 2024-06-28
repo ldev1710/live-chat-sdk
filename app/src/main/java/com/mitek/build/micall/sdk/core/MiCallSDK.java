@@ -74,7 +74,7 @@ class MiCallSDK {
             );
             isInitialized = true;
         } catch (Exception e) {
-            MiCallLog.logE(e.getMessage());
+//            MiCallLog.logE(e.getMessage());
         }
     }
 
@@ -90,7 +90,7 @@ class MiCallSDK {
         try {
             if(interValidate()) accountSDK.setRegistration(false);
         } catch (Exception e) {
-            MiCallLog.logE(e.getMessage());
+//            MiCallLog.logE(e.getMessage());
         }
     }
 
@@ -178,7 +178,7 @@ class MiCallSDK {
             callSDK.makeCall(buddyUri,param);
         } catch (Exception e) {
             callSDK.delete();
-            MiCallLog.logE(e.getMessage());
+//            MiCallLog.logE(e.getMessage());
         }
     }
 
@@ -217,7 +217,7 @@ class MiCallSDK {
         try {
             callSDK.answer(param);
         } catch (Exception e) {
-            MiCallLog.logE(e.getMessage());
+//            MiCallLog.logE(e.getMessage());
         }
     }
 
@@ -294,7 +294,7 @@ class MiCallSDK {
             accountSDK.modify(acf);
         } catch (Exception e) {
             accountSDK.delete();
-            MiCallLog.logE(e.getMessage());
+//            MiCallLog.logE(e.getMessage());
         }
     }
 }
