@@ -7,6 +7,7 @@ import org.pjsip.pjsua2.Account;
 import org.pjsip.pjsua2.CallOpParam;
 import org.pjsip.pjsua2.OnIncomingCallParam;
 import org.pjsip.pjsua2.OnInstantMessageParam;
+import org.pjsip.pjsua2.OnRegStartedParam;
 import org.pjsip.pjsua2.OnRegStateParam;
 import org.pjsip.pjsua2.pjsip_status_code;
 import com.mitek.build.micall.sdk.model.CallStateEnum;
@@ -30,6 +31,12 @@ public class AccountSDK extends Account {
     @Override
     public void onRegState(OnRegStateParam prm) {
         super.onRegState(prm);
+        observingRegState(prm);
+    }
+
+    @Override
+    public void onRegStarted(OnRegStartedParam prm) {
+        super.onRegStarted(prm);
         observingRegState(prm);
     }
 

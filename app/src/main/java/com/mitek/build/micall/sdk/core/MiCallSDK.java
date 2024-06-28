@@ -27,6 +27,7 @@ import org.pjsip.pjsua2.CallOpParam;
 import org.pjsip.pjsua2.Endpoint;
 import org.pjsip.pjsua2.EpConfig;
 import org.pjsip.pjsua2.Media;
+import org.pjsip.pjsua2.OnRegStartedParam;
 import org.pjsip.pjsua2.OnRegStateParam;
 import org.pjsip.pjsua2.TransportConfig;
 import org.pjsip.pjsua2.pjmedia_type;
@@ -36,6 +37,7 @@ import org.pjsip.pjsua2.pjsua_call_media_status;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 class MiCallSDK {
@@ -75,6 +77,19 @@ class MiCallSDK {
             isInitialized = true;
         } catch (Exception e) {
 //            MiCallLog.logE(e.getMessage());
+        }
+    }
+
+    public static void transfer(String phone,Context context){
+        if(!isMicrophoneGranted(context)) return;
+        String transferString = "sip:" + phone + "@" + currAccount.getDomain();
+
+        CallOpParam param = new CallOpParam();
+
+        try {
+            callSDK.xfer(transferString, param);
+        } catch (Exception e) {
+
         }
     }
 
@@ -165,12 +180,16 @@ class MiCallSDK {
         }
     }
 
-    static void makeCall(String phone, Context context){
-        if(!interValidate()) return;
+    private static boolean isMicrophoneGranted(Context context){
         if(ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
             MiCallLog.logE("Require microphone permission!");
-            return;
+            return false;
         }
+        return true;
+    }
+
+    static void makeCall(String phone, Context context){
+        if(!interValidate() || !isMicrophoneGranted(context)) return;
         callSDK = new CallSDK(accountSDK,-1);
         CallOpParam param = new CallOpParam(true);
         String buddyUri = "sip:"+phone+"@"+currAccount.getDomain();
@@ -178,7 +197,6 @@ class MiCallSDK {
             callSDK.makeCall(buddyUri,param);
         } catch (Exception e) {
             callSDK.delete();
-//            MiCallLog.logE(e.getMessage());
         }
     }
 
@@ -236,30 +254,40 @@ class MiCallSDK {
         }
     }
 
-    public static void observingRegState(OnRegStateParam prm){
+    public static void observingRegState(Object prm){
         String message;
         RegistrationStateEnum stateEnum;
-        if (prm.getExpiration() == 0L) {
-            message = "Un-registration: ";
-            if (prm.getCode() == 200) {
-                message += "Successful";
-                stateEnum = RegistrationStateEnum.UNREGISTERED;
+        if(prm instanceof OnRegStartedParam){
+            stateEnum = RegistrationStateEnum.REGISTERING;
+            message = "";
+        } else if(prm instanceof OnRegStateParam) {
+            if (((OnRegStateParam) prm).getExpiration() == 0L) {
+                message = "Un-registration: ";
+                if (((OnRegStateParam) prm).getCode() == 200) {
+                    message += "Successful";
+                    stateEnum = RegistrationStateEnum.UNREGISTERED;
+                } else {
+                    message += "Failed";
+                    stateEnum = RegistrationStateEnum.UNREGISTERED_FAILED;
+                }
             } else {
-                message += "Failed";
-                stateEnum = RegistrationStateEnum.UNREGISTERED_FAILED;
+                message = "Registration: ";
+                if (((OnRegStateParam) prm).getCode() == 200) {
+                    message += "Successful";
+                    stateEnum = RegistrationStateEnum.REGISTERED;
+                    isRegistered = true;
+                } else {
+                    message += "Failed";
+                    stateEnum = RegistrationStateEnum.REGISTER_FAILED;
+                }
             }
+            message += "(" + ((OnRegStateParam) prm).getReason() + ")";
         } else {
-            message = "Registration: ";
-            if (prm.getCode() == 200) {
-                message += "Successful";
-                stateEnum = RegistrationStateEnum.REGISTERED;
-                isRegistered = true;
-            } else {
-                message += "Failed";
-                stateEnum = RegistrationStateEnum.REGISTER_FAILED;
-            }
+            stateEnum = RegistrationStateEnum.UNKNOWN;
+            message = "None";
         }
-        message += "(" + prm.getReason() + ")";
+
+
         MiCallLog.logI(message);
         for(MiCallStateListener ob : MiCallSDK.observe){
             ob.onRegistrationStateChanged(stateEnum,message);
