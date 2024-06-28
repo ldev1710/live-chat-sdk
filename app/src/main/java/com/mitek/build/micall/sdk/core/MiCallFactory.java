@@ -34,6 +34,10 @@ public class MiCallFactory {
         MiCallSDK.toggleMute(isMute);
     }
 
+    public static void delete(){
+        MiCallSDK.destroy();
+    }
+
     public static void transfer(String phone, Context context){
         MiCallSDK.transfer(phone,context);
     }

@@ -325,4 +325,8 @@ class MiCallSDK {
 //            MiCallLog.logE(e.getMessage());
         }
     }
+
+    public static void destroy(){
+        ep.delete();
+    }
 }
