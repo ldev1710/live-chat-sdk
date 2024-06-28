@@ -165,12 +165,9 @@ class MiCallSDK {
         }
     }
 
-    static void makeCall(String phone, Activity activity){
+    static void makeCall(String phone, Context context){
         if(!interValidate()) return;
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
-        }
-        if(ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
             MiCallLog.logE("Require microphone permission!");
             return;
         }
