@@ -38,8 +38,8 @@ public class MiCallFactory {
         MiCallSDK.unRegister();
     }
 
-    public static void makeCall(String phone, Activity activity){
-        MiCallSDK.makeCall(phone, activity);
+    public static void makeCall(String phone, Context context){
+        MiCallSDK.makeCall(phone, context);
     }
 
     public static Call getCurrentCall(){
