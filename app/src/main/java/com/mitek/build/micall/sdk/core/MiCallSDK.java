@@ -327,6 +327,12 @@ class MiCallSDK {
     }
 
     public static void destroy(){
-        ep.delete();
+        try {
+            ep.libDestroy();
+            ep.delete();
+            ep = null;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
