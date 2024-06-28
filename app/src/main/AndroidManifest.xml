@@ -12,16 +12,10 @@
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <!--CALL STATE PERMISSION -->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
-    <!--    BLUETOOTH PERMISSION-->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
-
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
+<!--    <uses-feature-->
+<!--        android:name="android.hardware.camera"-->
+<!--        android:required="false" />-->
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- Needed to store received images if the user wants to -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> <!-- Needed to use our own Contact editor -->
@@ -42,5 +36,4 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.SET_ALARM"/>
 </manifest>

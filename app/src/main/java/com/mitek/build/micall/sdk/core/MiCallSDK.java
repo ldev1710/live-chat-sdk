@@ -1,7 +1,13 @@
 package com.mitek.build.micall.sdk.core;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener;
 import com.mitek.build.micall.sdk.model.Call;
@@ -159,8 +165,15 @@ class MiCallSDK {
         }
     }
 
-    static void makeCall(String phone){
+    static void makeCall(String phone, Activity activity){
         if(!interValidate()) return;
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, 1);
+        }
+        if(ContextCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+            MiCallLog.logE("Require microphone permission!");
+            return;
+        }
         callSDK = new CallSDK(accountSDK,-1);
         CallOpParam param = new CallOpParam(true);
         String buddyUri = "sip:"+phone+"@"+currAccount.getDomain();

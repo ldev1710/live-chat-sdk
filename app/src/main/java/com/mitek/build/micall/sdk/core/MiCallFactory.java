@@ -1,5 +1,6 @@
 package com.mitek.build.micall.sdk.core;
 
+import android.app.Activity;
 import android.content.Context;
 
 import com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener;
@@ -37,8 +38,8 @@ public class MiCallFactory {
         MiCallSDK.unRegister();
     }
 
-    public static void makeCall(String phone){
-        MiCallSDK.makeCall(phone);
+    public static void makeCall(String phone, Activity activity){
+        MiCallSDK.makeCall(phone, activity);
     }
 
     public static Call getCurrentCall(){
