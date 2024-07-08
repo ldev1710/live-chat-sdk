@@ -42,6 +42,7 @@ import java.util.Objects;
 
 class MiCallSDK {
     private static String apiKey;
+    private static boolean isAutoAnswer = false;
     private static Endpoint ep = new Endpoint();
     private static AccountSDK accountSDK = new AccountSDK();
     private static CallSDK callSDK;
@@ -80,7 +81,7 @@ class MiCallSDK {
         }
     }
 
-    public static void transfer(String phone,Context context){
+    public static void blindTransfer(String phone,Context context){
         if(!isMicrophoneGranted(context)) return;
         String transferString = "sip:" + phone + "@" + currAccount.getDomain();
 
@@ -252,6 +253,7 @@ class MiCallSDK {
             }
         } catch (Exception ignored) {
         }
+        if(callStateEnum == CallStateEnum.INCOMING && isAutoAnswer) answer();
     }
 
     public static void observingRegState(Object prm){
@@ -324,6 +326,10 @@ class MiCallSDK {
             accountSDK.delete();
 //            MiCallLog.logE(e.getMessage());
         }
+    }
+
+    public static void setAutoAnswer(boolean isEnable){
+        isAutoAnswer = isEnable;
     }
 
     public static void destroy(){

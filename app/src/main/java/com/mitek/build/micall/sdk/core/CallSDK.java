@@ -53,7 +53,6 @@ public class CallSDK extends Call {
             CallMediaInfoVector cmiv = getInfo().getMedia();
             for (int i = 0 ; i<cmiv.size();++i){
                 CallMediaInfo cmi = cmiv.get(i);
-//                MiCallLog.logI(cmi.getStatus()+"");
                 if (cmi.getType() == pjmedia_type.PJMEDIA_TYPE_AUDIO){
                     Media m = getMedia(i);
                     AudioMedia am = AudioMedia.typecastFromMedia(m);

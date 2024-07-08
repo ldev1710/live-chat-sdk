@@ -25,7 +25,9 @@ public class MiCallFactory {
     public static void hold(){
         MiCallSDK.hold();
     }
-
+    public static void setAutoAnswer(boolean isEnable){
+        MiCallSDK.setAutoAnswer(isEnable);
+    }
     public static void unHold(){
         MiCallSDK.unHold();
     }
@@ -38,8 +40,8 @@ public class MiCallFactory {
         MiCallSDK.destroy();
     }
 
-    public static void transfer(String phone, Context context){
-        MiCallSDK.transfer(phone,context);
+    public static void blindTransfer(String phone, Context context){
+        MiCallSDK.blindTransfer(phone,context);
     }
 
     public static void unRegister(){
