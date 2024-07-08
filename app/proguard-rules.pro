@@ -1,21 +1,9 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
--keep public class com.mitek.build.micall.sdk.core.MiCallFactory{
+-keep public class com.mitek.build.live.chat.sdk.core.MiCallFactory{
    public *;
 }
 
--keep public class com.mitek.build.micall.sdk.listener.publisher.MiCallStateListener{
+-keep public class com.mitek.build.live.chat.sdk.listener.publisher.MiCallStateListener{
     public *;
 }
 -keep public class org.pjsip.**{
@@ -23,11 +11,11 @@
 }
 # Obfuscate tất cả các class trong package này
 -repackageclasses
--keepclassmembers class com.mitek.build.micall.sdk.core.** {
+-keepclassmembers class com.mitek.build.live.chat.core.** {
     *;
 }
 
--keep public class com.mitek.build.micall.sdk.model.**{
+-keep public class com.mitek.build.live.chat.model.**{
     *;
 }
 # Loại bỏ các thông tin gỡ lỗi và các phương thức không cần thiết
