@@ -2,7 +2,10 @@ package com.mitek.build.live.chat.sdk.core;
 
 import static android.provider.Settings.System.getString;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -13,14 +16,11 @@ import com.mitek.build.live.chat.sdk.util.LCLog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class LiveChatSDK {
     private static boolean isAvailable = false;
     private static List<LiveChatListener> listeners;
-
-    private static boolean isValid(){
-        return
-    }
 
     public static void observingMessage(LCMessage lcMessage){
         if(listeners == null) return;
@@ -29,12 +29,25 @@ public class LiveChatSDK {
         }
     }
 
-    public static void initialize(String apiKey){
+    public static List<Objects> fetchConversation(){
+        return new ArrayList<>();
+    }
+
+    public static List<LCMessage> fetchDetailConversation(int conversationId){
+        return new ArrayList<>();
+    }
+
+    public static void initialize(String apiKey, Context context){
+        boolean isNotificationGranted = NotificationManagerCompat.from(context).areNotificationsEnabled();
+        if(!isNotificationGranted){
+            LCLog.logE("LiveChatSDK require post notification permission to use!");
+            return;
+        }
         listeners = new ArrayList<>();
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(task -> {
                     if (!task.isSuccessful()) {
-                        LCLog.logI("Fetching FCM registration token failed: "+task.getException());
+                        LCLog.logE("Fetching FCM registration token failed: "+task.getException());
                         return;
                     }
                     String token = task.getResult();
