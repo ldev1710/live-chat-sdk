@@ -1,10 +1,11 @@
 package com.mitek.build.live.chat.sdk.model.chat
 
-import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
-
-class LCMessage {
-    var id: Int = 0
-    var content: String? = null
-    var attachments: List<LCAttachment>? = null
+data class LCMessage (
+    var id: Int = 0,
+    var content: String? = null,
     var timeCreated: String? = null
+) {
+    override fun toString(): String {
+        return "LCMessage(id=$id, content=$content, timeCreated=$timeCreated)"
+    }
 }
