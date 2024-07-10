@@ -2,12 +2,16 @@ package com.mitek.build.live.chat.sdk.core
 
 import android.content.Context
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
-import com.mitek.build.live.chat.sdk.model.chat.LCMessage
-import java.util.Objects
+import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
+import com.mitek.build.live.chat.sdk.model.user.LCUser
 
 object LiveChatFactory {
-    fun initialize(context: Context) {
+    fun initializeSDK(context: Context) {
         LiveChatSDK.initialize(context)
+    }
+
+    fun initializeSession(user: LCUser) {
+        LiveChatSDK.initializeSession(user)
     }
 
     fun authorize(apiKey: String){
@@ -18,12 +22,8 @@ object LiveChatFactory {
         LiveChatSDK.addEventListener(listener)
     }
 
-    fun sendMessage(message: LCMessage){
+    fun sendMessage(message: LCMessageSend){
         LiveChatSDK.sendMessage(message)
-    }
-
-    fun getConversation() {
-        LiveChatSDK.getConversation()
     }
 
     fun getDetailConversation(conversationId: Int) {
