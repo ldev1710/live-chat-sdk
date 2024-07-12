@@ -22,12 +22,12 @@ object LiveChatFactory {
         LiveChatSDK.addEventListener(listener)
     }
 
-    fun sendMessage(message: LCMessageSend){
-        LiveChatSDK.sendMessage(message)
+    fun sendMessage(lcUser: LCUser, message: LCMessageSend){
+        LiveChatSDK.sendMessage(lcUser, message)
     }
 
-    fun getDetailConversation(conversationId: Int) {
-        LiveChatSDK.getDetailConversation(conversationId)
+    fun getMessages(sessionId: String) {
+        LiveChatSDK.getMessages(sessionId)
     }
 
     val isOnline: Boolean

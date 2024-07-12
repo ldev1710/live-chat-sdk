@@ -3,12 +3,15 @@ package com.mitek.build.live.chat.sdk.core
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.core.app.NotificationManagerCompat
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import com.mitek.build.live.chat.sdk.core.model.LCAccount
 import com.mitek.build.live.chat.sdk.core.model.LCSupportType
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
+import com.mitek.build.live.chat.sdk.model.chat.LCSender
 import com.mitek.build.live.chat.sdk.model.user.LCUser
 import com.mitek.build.live.chat.sdk.util.LCLog
 import com.mitek.build.live.chat.sdk.util.PrefUtil
@@ -84,14 +87,34 @@ object LiveChatSDK {
 
     fun initializeSession(user: LCUser) {
         if (isValid()) {
-            val body = JSONObject()
-            body.put(base64("groupid"),currLCAccount!!.groupId.toString())
-            body.put(base64("host_name"),currLCAccount!!.hostName)
-            body.put(base64("visitor_name"),user.fullName)
-            body.put(base64("visitor_email"),user.email)
-            body.put(base64("visitor_phone"),user.phone)
-            body.put(base64("url_visit"),user.deviceName)
-            socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
+            FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                if (!task.isSuccessful) {
+                    return@OnCompleteListener
+                }
+
+                // Get new FCM registration token
+                val token = task.result
+                val body = JSONObject()
+                body.put(base64("groupid"),currLCAccount!!.groupId.toString())
+                body.put(base64("host_name"),currLCAccount!!.hostName)
+                body.put(base64("visitor_name"),user.fullName)
+                body.put(base64("visitor_email"),user.email)
+                body.put(base64("visitor_phone"),user.phone)
+                body.put(base64("url_visit"),user.deviceName)
+                body.put(base64("token"), token)
+                LCLog.logI("Init session with: $body")
+                socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
+            })
+//            val body = JSONObject()
+//            body.put(base64("groupid"),currLCAccount!!.groupId.toString())
+//            body.put(base64("host_name"),currLCAccount!!.hostName)
+//            body.put(base64("visitor_name"),user.fullName)
+//            body.put(base64("visitor_email"),user.email)
+//            body.put(base64("visitor_phone"),user.phone)
+//            body.put(base64("url_visit"),user.deviceName)
+//            body.put(base64("token"), "fake_token")
+//            LCLog.logI("Init session with: $body")
+//            socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
         }
     }
 
@@ -100,26 +123,37 @@ object LiveChatSDK {
         listeners!!.add(listener)
     }
 
-    fun sendMessage(lcMessage: LCMessageSend) {
+    fun sendMessage(lcUser: LCUser, lcMessage: LCMessageSend) {
         if (isValid()) {
             val jsonObject = JSONObject()
             jsonObject.put(base64("body"),lcMessage.content)
             jsonObject.put(base64("add_message_archive"),"")
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
-            jsonObject.put(base64("session_id"), PrefUtil.getString("currSessionId"))
+            jsonObject.put(base64("reply"), 0)
+            jsonObject.put(base64("type"), "live-chat-sdk")
+            jsonObject.put(base64("from"), PrefUtil.getString("currVisitorJid"))
+            jsonObject.put(base64("name"), lcUser.fullName)
+            jsonObject.put(base64("session_id"), lcMessage.sessionId)
             jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
+            jsonObject.put(base64("visitor_jid"), PrefUtil.getString("currVisitorJid"))
             LCLog.logI("Send message with: $jsonObject")
             socketClient!!.emit(SocketConstant.SEND_MESSAGE, jsonObject)
             observingSendMessage(LCSendMessageEnum.SENDING,null)
         }
     }
 
-    fun getDetailConversation(conversationId: Int) {
-        if (isValid()) socket!!.emit(SocketConstant.FETCH_DETAIL_CONVERSATION, conversationId)
+    fun getMessages(sessionId: String) {
+        if (isValid()) {
+            var jsonObject = JSONObject()
+            jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
+            jsonObject.put(base64("session_id"), sessionId)
+            jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
+            socket!!.emit(SocketConstant.GET_MESSAGES,jsonObject)
+        }
     }
 
     fun authorize(apiKey: String) {
-        socket!!.emit(SocketConstant.AUTHENTICATION, apiKey)
+        if (isInitialized) socket!!.emit(SocketConstant.AUTHENTICATION, apiKey)
     }
 
     fun initialize(context: Context) {
@@ -171,34 +205,71 @@ object LiveChatSDK {
             )
             try {
                 socketClient = IO.socket(SocketConstant.CLIENT_URL_SOCKET)
-                socketClient!!.on(SocketConstant.RESULT_FETCH_DETAIL_CONVERSATION) { data ->
-                    LCLog.logI("RESULT_FETCH_DETAIL_CONVERSATION: ${data[0]}")
-
-                }
-                socketClient!!.on(SocketConstant.RESULT_SEND_MESSAGE) { data ->
-                    LCLog.logI("RESULT_SEND_MESSAGE: ${data[0]}")
+                socket!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
+                    LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
                     val jsonObject = data[0] as JSONObject
-                    val success = jsonObject.getBoolean("status")
                     val messageRaw = jsonObject.getJSONObject("data")
+                    val fromRaw = messageRaw.getJSONObject("from")
                     val lcMessage = LCMessage(
                         messageRaw.getInt("id"),
                         messageRaw.getString("content"),
-                        messageRaw.getString("created_at")
+                        LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
+                        messageRaw.getString("created_at"),
+                    )
+                    if(lcMessage.from.id != PrefUtil.getString("currVisitorJid")) observingMessage(lcMessage)
+                }
+                socketClient!!.on(SocketConstant.CONFIRM_SEND_MESSAGE) { data ->
+                    LCLog.logI("CONFIRM_SEND_MESSAGE: ${data[0]}")
+                    val jsonObject = data[0] as JSONObject
+                    val success = jsonObject.getBoolean("status")
+                    val messageRaw = jsonObject.getJSONObject("data")
+                    val fromRaw = messageRaw.getJSONObject("from")
+                    val lcMessage = LCMessage(
+                        messageRaw.getInt("id"),
+                        messageRaw.getString("content"),
+                        LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
+                        messageRaw.getString("created_at"),
                     )
 
                     observingSendMessage(if (success) LCSendMessageEnum.SENT_SUCCESS else LCSendMessageEnum.SENT_FAILED,if (success) lcMessage else null)
                 }
                 socketClient!!.on(SocketConstant.RESULT_INITIALIZE_SESSION) { data ->
                     val jsonObject = data[0] as JSONObject
+                    LCLog.logI(jsonObject.toString())
                     val success: Boolean = jsonObject.getBoolean("status")
                     val sessionId: String = jsonObject.getString("session_id")
+                    val visitorJid: String = jsonObject.getString("visitor_jid")
                     PrefUtil.setString("currSessionId",sessionId)
+                    PrefUtil.setString("currVisitorJid",visitorJid)
                     observingInitialSession(success,sessionId)
                 }
                 socketClient!!.connect()
                 observingAuthorize(true, "Authorization successful", currLCAccount)
             } catch (ignored: URISyntaxException) {
             }
+        }
+        socket!!.on(SocketConstant.RESULT_GET_MESSAGES) {
+                data ->
+            val jsonObject = data[0] as JSONObject
+            LCLog.logI(jsonObject.toString())
+            val messagesRaw = jsonObject.getJSONArray("data")
+            val messages = ArrayList<LCMessage>()
+            for (i in 0..<messagesRaw.length()){
+                val jsonMessage = messagesRaw.getJSONObject(i)
+                val jsonSender = jsonMessage.getJSONObject("from")
+                messages.add(
+                    LCMessage(
+                        jsonMessage.getInt("id"),
+                        jsonMessage.getString("content"),
+                        LCSender(
+                            jsonSender.getString("id"),
+                            jsonSender.getString("name")
+                        ),
+                        jsonMessage.getString("created_at"),
+                    )
+                )
+            }
+
         }
         listeners = ArrayList()
         isInitialized = true
