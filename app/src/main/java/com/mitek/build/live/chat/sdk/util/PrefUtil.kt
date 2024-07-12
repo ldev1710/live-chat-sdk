@@ -21,12 +21,12 @@ object PrefUtil {
 
     @SuppressLint("CommitPrefEdits")
     fun setString(key:String, value:String){
-        var editor: SharedPreferences.Editor = instance().edit()
+        val editor: SharedPreferences.Editor = instance().edit()
         editor.putString(key,value)
         editor.apply()
     }
 
     fun getString(key:String) : String?{
-        return instance().getString(key,"")
+        return instance().getString(key,null)
     }
 }
