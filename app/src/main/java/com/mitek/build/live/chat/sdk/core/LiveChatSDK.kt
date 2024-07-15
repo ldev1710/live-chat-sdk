@@ -2,8 +2,6 @@ package com.mitek.build.live.chat.sdk.core
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
@@ -19,12 +17,11 @@ import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
 import com.mitek.build.live.chat.sdk.util.LCLog
 import com.mitek.build.live.chat.sdk.util.SocketConstant
-import io.github.cdimascio.dotenv.dotenv
 import io.socket.client.IO
 import io.socket.client.Socket
 import org.json.JSONObject
-import java.io.ByteArrayOutputStream
 import java.io.File
+import java.net.URI
 import java.net.URISyntaxException
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
@@ -38,10 +35,6 @@ object LiveChatSDK {
     private var context: Context? = null
     private var socket: Socket? = null
     private var socketClient: Socket? = null
-    private var dotenv = dotenv {
-        directory = "./res/raw"
-        filename = "env"
-    }
     private var currLCAccount: LCAccount? = null
 
     private fun isValid(): Boolean {
@@ -110,6 +103,14 @@ object LiveChatSDK {
         if (listeners == null) return
         for (listener in listeners!!) {
             listener.onSendMessageStateChange(state, message)
+        }
+    }
+
+    @JvmStatic
+    fun observingInitSDK(success: Boolean,message: String) {
+        if (listeners == null) return
+        for (listener in listeners!!) {
+            listener.onInitSDKStateChanged(success, message)
         }
     }
 
@@ -186,116 +187,120 @@ object LiveChatSDK {
     fun initialize(context: Context) {
         val isNotificationGranted = NotificationManagerCompat.from(context).areNotificationsEnabled()
         if (!isNotificationGranted) {
-            LCLog.logE("LiveChatSDK require post notification permission to use!")
+            observingInitSDK(false,"LiveChatSDK require post notification permission to use!")
             return
         }
         this.context = context
         try {
             socket = IO.socket(BuildConfig.BASE_URL_SOCKET)
             socket!!.on(SocketConstant.CONFIRM_CONNECT) { data ->
-                LCLog.logI("connected: ${socket!!.connected()}")
+                isInitialized = true
+                observingInitSDK(true,"Initial SDK successful!")
+            }
+            socket!!.on(SocketConstant.RESULT_AUTHENTICATION) { data ->
+                val jsonObject = data[0] as JSONObject
+                LCLog.logI("RESULT_AUTHENTICATION: $jsonObject")
+                val success = jsonObject.getBoolean("status")
+                isAvailable = success
+                if (!success) {
+                    //Observe failed
+                    observingAuthorize(false, "Un-authorized",null)
+                    return@on
+                }
+                val dataResp = jsonObject.getJSONObject("data")
+                SocketConstant.CLIENT_URL_SOCKET = dataResp.getString("domain_socket")
+                val supportTypesRaw = dataResp.getJSONArray("support_type")
+                var supportTypes: ArrayList<LCSupportType> = ArrayList()
+                for(i in 0..<supportTypesRaw.length()){
+                    var jsonObject: JSONObject = supportTypesRaw.getJSONObject(i)
+                    supportTypes.add(
+                        LCSupportType(
+                            jsonObject.getString("id"),
+                            jsonObject.getString("name")
+                        )
+                    )
+                }
+                currLCAccount = LCAccount(
+                    dataResp.getInt("id"),
+                    dataResp.getInt("groupid"),
+                    dataResp.getString("group_name"),
+                    dataResp.getString("domain_socket"),
+                    dataResp.getString("for_domain"),
+                    supportTypes
+                )
+                try {
+                    socketClient = IO.socket(SocketConstant.CLIENT_URL_SOCKET)
+                    socketClient!!.on(SocketConstant.CONFIRM_CONNECT) { data ->
+                        observingAuthorize(true, "Authorization successful", currLCAccount)
+                    }
+                    socketClient!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
+                        LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
+                        val jsonObject = data[0] as JSONObject
+                        val messageRaw = jsonObject.getJSONObject("data")
+                        val fromRaw = messageRaw.getJSONObject("from")
+                        val lcMessage = LCMessage(
+                            messageRaw.getInt("id"),
+                            messageRaw.getString("content"),
+                            LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
+                            messageRaw.getString("created_at"),
+                        )
+//                    if(lcMessage.from.id != PrefUtil.getString("currVisitorJid")) observingMessage(lcMessage)
+                    }
+                    socketClient!!.on(SocketConstant.CONFIRM_SEND_MESSAGE) { data ->
+                        LCLog.logI("CONFIRM_SEND_MESSAGE: ${data[0]}")
+                        val jsonObject = data[0] as JSONObject
+                        val success = jsonObject.getBoolean("status")
+                        val messageRaw = jsonObject.getJSONObject("data")
+                        val fromRaw = messageRaw.getJSONObject("from")
+                        val lcMessage = LCMessage(
+                            messageRaw.getInt("id"),
+                            messageRaw.getString("content"),
+                            LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
+                            messageRaw.getString("created_at"),
+                        )
+
+                        observingSendMessage(if (success) LCSendMessageEnum.SENT_SUCCESS else LCSendMessageEnum.SENT_FAILED,if (success) lcMessage else null)
+                    }
+                    socketClient!!.on(SocketConstant.RESULT_INITIALIZE_SESSION) { data ->
+                        val jsonObject = data[0] as JSONObject
+                        LCLog.logI(jsonObject.toString())
+                        val success: Boolean = jsonObject.getBoolean("status")
+                        val sessionId: String = jsonObject.getString("session_id")
+                        val visitorJid: String = jsonObject.getString("visitor_jid")
+                        observingInitialSession(success, LCSession(sessionId,visitorJid))
+                    }
+                    socketClient!!.connect()
+                } catch (e: Exception) {
+                    LCLog.logE(e.toString())
+                }
+            }
+            socket!!.on(SocketConstant.RESULT_GET_MESSAGES) {
+                    data ->
+                val jsonObject = data[0] as JSONObject
+                LCLog.logI(jsonObject.toString())
+                val messagesRaw = jsonObject.getJSONArray("data")
+                val messages = ArrayList<LCMessage>()
+                for (i in 0..<messagesRaw.length()){
+                    val jsonMessage = messagesRaw.getJSONObject(i)
+                    val jsonSender = jsonMessage.getJSONObject("from")
+                    messages.add(
+                        LCMessage(
+                            jsonMessage.getInt("id"),
+                            jsonMessage.getString("content"),
+                            LCSender(
+                                jsonSender.getString("id"),
+                                jsonSender.getString("name")
+                            ),
+                            jsonMessage.getString("created_at"),
+                        )
+                    )
+                }
+
             }
             socket!!.connect()
         } catch (e: Exception) {
             LCLog.logE(e.toString())
         }
-        socket!!.on(SocketConstant.RESULT_AUTHENTICATION) { data ->
-            val jsonObject = data[0] as JSONObject
-            val success = jsonObject.getBoolean("status")
-            isAvailable = success
-            if (!success) {
-                //Observe failed
-                observingAuthorize(false, "Un-authorized",null)
-                return@on
-            }
-            val dataResp = jsonObject.getJSONObject("data")
-            SocketConstant.CLIENT_URL_SOCKET = dataResp.getString("domain_socket")
-            val supportTypesRaw = dataResp.getJSONArray("support_type")
-            var supportTypes: ArrayList<LCSupportType> = ArrayList()
-            for(i in 0..<supportTypesRaw.length()){
-                var jsonObject: JSONObject = supportTypesRaw.getJSONObject(i)
-                supportTypes.add(
-                    LCSupportType(
-                        jsonObject.getString("id"),
-                        jsonObject.getString("name")
-                    )
-                )
-            }
-            currLCAccount = LCAccount(
-                dataResp.getInt("id"),
-                dataResp.getInt("groupid"),
-                dataResp.getString("group_name"),
-                dataResp.getString("domain_socket"),
-                dataResp.getString("for_domain"),
-                supportTypes
-            )
-            try {
-                socketClient = IO.socket(SocketConstant.CLIENT_URL_SOCKET)
-                socket!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
-                    LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
-//                    val jsonObject = data[0] as JSONObject
-//                    val messageRaw = jsonObject.getJSONObject("data")
-//                    val fromRaw = messageRaw.getJSONObject("from")
-//                    val lcMessage = LCMessage(
-//                        messageRaw.getInt("id"),
-//                        messageRaw.getString("content"),
-//                        LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
-//                        messageRaw.getString("created_at"),
-//                    )
-//                    if(lcMessage.from.id != PrefUtil.getString("currVisitorJid")) observingMessage(lcMessage)
-                }
-                socketClient!!.on(SocketConstant.CONFIRM_SEND_MESSAGE) { data ->
-                    LCLog.logI("CONFIRM_SEND_MESSAGE: ${data[0]}")
-                    val jsonObject = data[0] as JSONObject
-                    val success = jsonObject.getBoolean("status")
-                    val messageRaw = jsonObject.getJSONObject("data")
-                    val fromRaw = messageRaw.getJSONObject("from")
-                    val lcMessage = LCMessage(
-                        messageRaw.getInt("id"),
-                        messageRaw.getString("content"),
-                        LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
-                        messageRaw.getString("created_at"),
-                    )
 
-                    observingSendMessage(if (success) LCSendMessageEnum.SENT_SUCCESS else LCSendMessageEnum.SENT_FAILED,if (success) lcMessage else null)
-                }
-                socketClient!!.on(SocketConstant.RESULT_INITIALIZE_SESSION) { data ->
-                    val jsonObject = data[0] as JSONObject
-                    LCLog.logI(jsonObject.toString())
-                    val success: Boolean = jsonObject.getBoolean("status")
-                    val sessionId: String = jsonObject.getString("session_id")
-                    val visitorJid: String = jsonObject.getString("visitor_jid")
-                    observingInitialSession(success, LCSession(sessionId,visitorJid))
-                }
-                socketClient!!.connect()
-                observingAuthorize(true, "Authorization successful", currLCAccount)
-            } catch (ignored: URISyntaxException) {
-            }
-        }
-        socket!!.on(SocketConstant.RESULT_GET_MESSAGES) {
-                data ->
-            val jsonObject = data[0] as JSONObject
-            LCLog.logI(jsonObject.toString())
-            val messagesRaw = jsonObject.getJSONArray("data")
-            val messages = ArrayList<LCMessage>()
-            for (i in 0..<messagesRaw.length()){
-                val jsonMessage = messagesRaw.getJSONObject(i)
-                val jsonSender = jsonMessage.getJSONObject("from")
-                messages.add(
-                    LCMessage(
-                        jsonMessage.getInt("id"),
-                        jsonMessage.getString("content"),
-                        LCSender(
-                            jsonSender.getString("id"),
-                            jsonSender.getString("name")
-                        ),
-                        jsonMessage.getString("created_at"),
-                    )
-                )
-            }
-
-        }
-        listeners = ArrayList()
-        isInitialized = true
     }
 }

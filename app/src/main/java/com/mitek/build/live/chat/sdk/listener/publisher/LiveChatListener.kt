@@ -10,6 +10,9 @@ open class LiveChatListener : LiveChatObserve {
     override fun onReceiveMessage(lcMessage: LCMessage) {
     }
 
+    override fun onInitSDKStateChanged(success: Boolean, message: String) {
+    }
+
     override fun onAuthStateChanged(success: Boolean, message: String,lcAccount: LCAccount?) {
     }
 
