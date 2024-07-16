@@ -29,7 +29,7 @@ object LCParseUtils {
             }
             lcContent.contentMessage = lcAttachments
         } else {
-            lcContent.contentMessage = rawContent.getJSONArray("content-message")
+            lcContent.contentMessage = rawContent.getString("content-message")
         }
         return lcContent
     }
