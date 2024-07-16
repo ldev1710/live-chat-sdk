@@ -6,8 +6,11 @@ import androidx.core.app.NotificationManagerCompat
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.mitek.build.live.chat.sdk.BuildConfig
+import com.mitek.build.live.chat.sdk.core.model.InitialEnum
 import com.mitek.build.live.chat.sdk.core.model.LCAccount
 import com.mitek.build.live.chat.sdk.core.model.LCSupportType
+import com.mitek.build.live.chat.sdk.core.model.ResponseUploadFile
+import com.mitek.build.live.chat.sdk.core.network.ApiClient
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
@@ -16,13 +19,18 @@ import com.mitek.build.live.chat.sdk.model.chat.LCSender
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
 import com.mitek.build.live.chat.sdk.util.LCLog
+import com.mitek.build.live.chat.sdk.util.LCParseUtils
 import com.mitek.build.live.chat.sdk.util.SocketConstant
 import io.socket.client.IO
 import io.socket.client.Socket
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.File
-import java.net.URI
-import java.net.URISyntaxException
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -47,29 +55,44 @@ object LiveChatSDK {
 
     fun sendFileMessage(paths: ArrayList<String>, lcUser:LCUser, lcSession: LCSession){
         if(isValid()){
-            val files = ArrayList<String>()
+            if(paths.size > 3){
+                LCLog.logE("You are only allowed to send a maximum of 3 files")
+                return
+            }
+            val multipartBodyFile = ArrayList<MultipartBody.Part>()
             paths.forEach {
                 val file = File(it)
                 if (file.exists() && file.length() > 0) {
-                    val bytes = file.readBytes()
-                    val base64File: String = base64(bytes.toString())
-                    files.add(base64File)
+                    val requestBodyFile = file.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+                    val fileName = file.name.replace(" ", "-")
+                    multipartBodyFile.add(MultipartBody.Part.createFormData("body", fileName, requestBodyFile))
                 }
             }
-            val jsonObject = JSONObject()
-            jsonObject.put(base64("body"),files)
-            jsonObject.put(base64("add_message_archive"),"")
-            jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
-            jsonObject.put(base64("reply"), 0)
-            jsonObject.put(base64("type"), "live-chat-sdk")
-            jsonObject.put(base64("from"), lcSession.visitorJid)
-            jsonObject.put(base64("name"), lcUser.fullName)
-            jsonObject.put(base64("session_id"), lcSession.sessionId)
-            jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
-            jsonObject.put(base64("visitor_jid"), lcSession.visitorJid)
-            jsonObject.put(base64("is_file"), 1)
-            LCLog.logI("Send message with: $jsonObject")
-            socketClient!!.emit(SocketConstant.SEND_MESSAGE, jsonObject)
+            val call = ApiClient.apiService.uploadFile(
+                multipartBodyFile,
+                "",
+                currLCAccount!!.groupId,
+                0,
+                "live-chat-sdk",
+                lcSession.visitorJid,
+                lcUser.fullName,
+                lcSession.sessionId,
+                currLCAccount!!.hostName,
+                lcSession.visitorJid,
+                1,
+            )
+
+            call.enqueue(object : Callback<ResponseUploadFile> {
+                override fun onResponse(call: Call<ResponseUploadFile>, response: Response<ResponseUploadFile>) {
+                    LCLog.logI("Response upload file: ${response.body()}")
+                    if (response.isSuccessful) {
+                    } else {
+                    }
+                }
+                override fun onFailure(call: Call<ResponseUploadFile>, t: Throwable) {
+                    LCLog.logE(t.message)
+                }
+            })
             observingSendMessage(LCSendMessageEnum.SENDING,null)
         }
     }
@@ -79,6 +102,14 @@ object LiveChatSDK {
         if (listeners == null) return
         for (listener in listeners!!) {
             listener.onReceiveMessage(lcMessage)
+        }
+    }
+
+    @JvmStatic
+    fun observingGotMessages(messages: ArrayList<LCMessage>) {
+        if (listeners == null) return
+        for (listener in listeners!!) {
+            listener.onGotDetailConversation(messages)
         }
     }
 
@@ -107,10 +138,10 @@ object LiveChatSDK {
     }
 
     @JvmStatic
-    fun observingInitSDK(success: Boolean,message: String) {
+    fun observingInitSDK(state: InitialEnum,message: String) {
         if (listeners == null) return
         for (listener in listeners!!) {
-            listener.onInitSDKStateChanged(success, message)
+            listener.onInitSDKStateChanged(state, message)
         }
     }
 
@@ -187,15 +218,16 @@ object LiveChatSDK {
     fun initialize(context: Context) {
         val isNotificationGranted = NotificationManagerCompat.from(context).areNotificationsEnabled()
         if (!isNotificationGranted) {
-            observingInitSDK(false,"LiveChatSDK require post notification permission to use!")
+            observingInitSDK(InitialEnum.FAILED,"LiveChatSDK require post notification permission to use!")
             return
         }
+        observingInitSDK(InitialEnum.PROCESSING,"LiveChatSDK initial is processing!")
         this.context = context
         try {
             socket = IO.socket(BuildConfig.BASE_URL_SOCKET)
             socket!!.on(SocketConstant.CONFIRM_CONNECT) { data ->
                 isInitialized = true
-                observingInitSDK(true,"Initial SDK successful!")
+                observingInitSDK(InitialEnum.SUCCESS,"Initial SDK successful!")
             }
             socket!!.on(SocketConstant.RESULT_AUTHENTICATION) { data ->
                 val jsonObject = data[0] as JSONObject
@@ -210,9 +242,9 @@ object LiveChatSDK {
                 val dataResp = jsonObject.getJSONObject("data")
                 SocketConstant.CLIENT_URL_SOCKET = dataResp.getString("domain_socket")
                 val supportTypesRaw = dataResp.getJSONArray("support_type")
-                var supportTypes: ArrayList<LCSupportType> = ArrayList()
+                val supportTypes: ArrayList<LCSupportType> = ArrayList()
                 for(i in 0..<supportTypesRaw.length()){
-                    var jsonObject: JSONObject = supportTypesRaw.getJSONObject(i)
+                    val jsonObject: JSONObject = supportTypesRaw.getJSONObject(i)
                     supportTypes.add(
                         LCSupportType(
                             jsonObject.getString("id"),
@@ -234,16 +266,16 @@ object LiveChatSDK {
                         observingAuthorize(true, "Authorization successful", currLCAccount)
                     }
                     socketClient!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
-                        LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
-                        val jsonObject = data[0] as JSONObject
-                        val messageRaw = jsonObject.getJSONObject("data")
-                        val fromRaw = messageRaw.getJSONObject("from")
-                        val lcMessage = LCMessage(
-                            messageRaw.getInt("id"),
-                            messageRaw.getString("content"),
-                            LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
-                            messageRaw.getString("created_at"),
-                        )
+//                        LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
+//                        val jsonObject = data[0] as JSONObject
+//                        val messageRaw = jsonObject.getJSONObject("data")
+//                        val fromRaw = messageRaw.getJSONObject("from")
+//                        val lcMessage = LCMessage(
+//                            messageRaw.getInt("id"),
+//                            messageRaw.getString("content"),
+//                            LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
+//                            messageRaw.getString("created_at"),
+//                        )
 //                    if(lcMessage.from.id != PrefUtil.getString("currVisitorJid")) observingMessage(lcMessage)
                     }
                     socketClient!!.on(SocketConstant.CONFIRM_SEND_MESSAGE) { data ->
@@ -252,9 +284,10 @@ object LiveChatSDK {
                         val success = jsonObject.getBoolean("status")
                         val messageRaw = jsonObject.getJSONObject("data")
                         val fromRaw = messageRaw.getJSONObject("from")
+                        val rawContent = messageRaw.getJSONObject("content")
                         val lcMessage = LCMessage(
                             messageRaw.getInt("id"),
-                            messageRaw.getString("content"),
+                            LCParseUtils.parseLCContentFrom(rawContent),
                             LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
                             messageRaw.getString("created_at"),
                         )
@@ -283,10 +316,11 @@ object LiveChatSDK {
                 for (i in 0..<messagesRaw.length()){
                     val jsonMessage = messagesRaw.getJSONObject(i)
                     val jsonSender = jsonMessage.getJSONObject("from")
+                    val rawContent = jsonMessage.getJSONObject("content")
                     messages.add(
                         LCMessage(
                             jsonMessage.getInt("id"),
-                            jsonMessage.getString("content"),
+                            LCParseUtils.parseLCContentFrom(rawContent),
                             LCSender(
                                 jsonSender.getString("id"),
                                 jsonSender.getString("name")
@@ -295,7 +329,7 @@ object LiveChatSDK {
                         )
                     )
                 }
-
+                observingGotMessages(messages)
             }
             socket!!.connect()
         } catch (e: Exception) {

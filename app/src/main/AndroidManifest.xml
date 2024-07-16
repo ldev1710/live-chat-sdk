@@ -2,7 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.mitek.build.live.chat.sdk">
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <application>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application
+        android:usesCleartextTraffic="true"
+        >
         <service
             android:name=".service.LCService"
             android:exported="false">

@@ -2,7 +2,7 @@ package com.mitek.build.live.chat.sdk.model.chat
 
 data class LCMessage (
     var id: Int = 0,
-    var content: String,
+    var content: LCContent,
     var from: LCSender,
     var timeCreated: String
 ) {

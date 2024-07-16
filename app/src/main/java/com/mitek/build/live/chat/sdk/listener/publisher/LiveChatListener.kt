@@ -1,5 +1,6 @@
 package com.mitek.build.live.chat.sdk.listener.publisher
 
+import com.mitek.build.live.chat.sdk.core.model.InitialEnum
 import com.mitek.build.live.chat.sdk.core.model.LCAccount
 import com.mitek.build.live.chat.sdk.listener.observe.LiveChatObserve
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
@@ -10,7 +11,7 @@ open class LiveChatListener : LiveChatObserve {
     override fun onReceiveMessage(lcMessage: LCMessage) {
     }
 
-    override fun onInitSDKStateChanged(success: Boolean, message: String) {
+    override fun onInitSDKStateChanged(state: InitialEnum, message: String) {
     }
 
     override fun onAuthStateChanged(success: Boolean, message: String,lcAccount: LCAccount?) {

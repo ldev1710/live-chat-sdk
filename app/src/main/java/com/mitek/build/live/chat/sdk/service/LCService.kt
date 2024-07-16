@@ -6,6 +6,7 @@ import com.mitek.build.live.chat.sdk.core.LiveChatSDK.observingMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCSender
 import com.mitek.build.live.chat.sdk.util.LCLog
+import com.mitek.build.live.chat.sdk.util.LCParseUtils
 import org.json.JSONObject
 
 open class LCService : FirebaseMessagingService() {
@@ -14,9 +15,11 @@ open class LCService : FirebaseMessagingService() {
         val data = message.data
         LCLog.logI("data fcm received: $data")
         val from = JSONObject(data["sender"] as String)
+        val rawContent = JSONObject(data["content"] as String)
+        var lcContent = LCParseUtils.parseLCContentFrom(rawContent)
         val lcMessage = LCMessage(
             data["id"]!!.toInt(),
-            data["content"]!!,
+            lcContent,
             LCSender(from.getString("id"),from.getString("name")),
             data["created_at"]!!,
         )
