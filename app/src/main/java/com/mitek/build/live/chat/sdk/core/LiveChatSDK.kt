@@ -311,25 +311,25 @@ object LiveChatSDK {
                     data ->
                 val jsonObject = data[0] as JSONObject
                 LCLog.logI(jsonObject.toString())
-//                val messagesRaw = jsonObject.getJSONArray("data")
-//                val messages = ArrayList<LCMessage>()
-//                for (i in 0..<messagesRaw.length()){
-//                    val jsonMessage = messagesRaw.getJSONObject(i)
-//                    val jsonSender = jsonMessage.getJSONObject("from")
-//                    val rawContent = jsonMessage.getJSONObject("content")
-//                    messages.add(
-//                        LCMessage(
-//                            jsonMessage.getInt("id"),
-//                            LCParseUtils.parseLCContentFrom(rawContent),
-//                            LCSender(
-//                                jsonSender.getString("id"),
-//                                jsonSender.getString("name")
-//                            ),
-//                            jsonMessage.getString("created_at"),
-//                        )
-//                    )
-//                }
-                observingGotMessages(ArrayList())
+                val messagesRaw = jsonObject.getJSONArray("data")
+                val messages = ArrayList<LCMessage>()
+                for (i in 0..<messagesRaw.length()){
+                    val jsonMessage = messagesRaw.getJSONObject(i)
+                    val jsonSender = jsonMessage.getJSONObject("from")
+                    val rawContent = jsonMessage.getJSONObject("content")
+                    messages.add(
+                        LCMessage(
+                            jsonMessage.getInt("id"),
+                            LCParseUtils.parseLCContentFrom(rawContent),
+                            LCSender(
+                                jsonSender.getString("id"),
+                                jsonSender.getString("name")
+                            ),
+                            jsonMessage.getString("created_at"),
+                        )
+                    )
+                }
+                observingGotMessages(messages)
             }
             socket!!.connect()
         } catch (e: Exception) {
