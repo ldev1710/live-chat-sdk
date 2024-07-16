@@ -88,6 +88,14 @@ object LiveChatSDK {
     }
 
     @JvmStatic
+    fun observingGotMessages(messages: ArrayList<LCMessage>) {
+        if (listeners == null) return
+        for (listener in listeners!!) {
+            listener.onGotDetailConversation(messages)
+        }
+    }
+
+    @JvmStatic
     fun observingAuthorize(success: Boolean, message: String,lcAccount: LCAccount?) {
         if (listeners == null) return
         for (listener in listeners!!) {
@@ -300,7 +308,7 @@ object LiveChatSDK {
                         )
                     )
                 }
-
+                observingGotMessages(messages)
             }
             socket!!.connect()
         } catch (e: Exception) {
