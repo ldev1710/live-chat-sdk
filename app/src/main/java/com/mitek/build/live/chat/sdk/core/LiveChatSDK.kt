@@ -47,13 +47,18 @@ object LiveChatSDK {
 
     fun sendFileMessage(paths: ArrayList<String>, lcUser:LCUser, lcSession: LCSession){
         if(isValid()){
+            if(paths.size > 3){
+                LCLog.logE("You are only allowed to send a maximum of 3 files")
+                return
+            }
             val files = ArrayList<String>()
             paths.forEach {
                 val file = File(it)
                 if (file.exists() && file.length() > 0) {
                     val bytes = file.readBytes()
-                    val base64File: String = base64(bytes.toString())
-                    files.add(base64File)
+                    val fileString = base64(bytes.decodeToString())
+//                    LCLog.logI(fileString)
+                    files.add(fileString)
                 }
             }
             val jsonObject = JSONObject()
