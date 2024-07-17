@@ -12,7 +12,7 @@ object LiveChatFactory {
     }
 
     fun sendFileMessage(paths: ArrayList<String>,lcUser: LCUser,lcSession: LCSession){
-        LiveChatSDK.sendFileMessage(paths, lcUser,lcSession)
+        LiveChatSDK.sendFileMessage(paths, lcUser, lcSession)
     }
 
     fun initializeSession(user: LCUser) {

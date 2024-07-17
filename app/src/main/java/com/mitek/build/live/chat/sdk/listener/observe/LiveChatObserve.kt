@@ -13,5 +13,5 @@ interface LiveChatObserve {
     fun onAuthStateChanged(success: Boolean,message: String,lcAccount: LCAccount?)
     fun onInitialSessionStateChanged(success: Boolean,lcSession: LCSession)
     fun onGotDetailConversation(messages: ArrayList<LCMessage>)
-    fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?)
+    fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?,errorMessage: String?)
 }

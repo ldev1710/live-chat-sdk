@@ -23,6 +23,6 @@ open class LiveChatListener : LiveChatObserve {
     override fun onGotDetailConversation(messages: ArrayList<LCMessage>) {
     }
 
-    override fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?) {
+    override fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?,errorMessage: String?) {
     }
 }

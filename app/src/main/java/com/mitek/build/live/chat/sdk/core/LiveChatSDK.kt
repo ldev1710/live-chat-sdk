@@ -37,7 +37,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 
 @SuppressLint("StaticFieldLeak")
 object LiveChatSDK {
-    private var isInitialized = false;
+    private var isInitialized = false
     private var isAvailable = false
     private var listeners: ArrayList<LiveChatListener>? = null
     private var context: Context? = null
@@ -84,16 +84,14 @@ object LiveChatSDK {
 
             call.enqueue(object : Callback<ResponseUploadFile> {
                 override fun onResponse(call: Call<ResponseUploadFile>, response: Response<ResponseUploadFile>) {
-                    LCLog.logI("Response upload file: ${response.body()}")
-                    if (response.isSuccessful) {
-                    } else {
-                    }
+//                    LCLog.logI("Response upload file: ${response.body()}")
+                    observingSendMessage(LCSendMessageEnum.SENT_SUCCESS,response.body()!!.data,null)
                 }
                 override fun onFailure(call: Call<ResponseUploadFile>, t: Throwable) {
-                    LCLog.logE(t.message)
+                    observingSendMessage(LCSendMessageEnum.SENT_FAILED,null, t.message)
                 }
             })
-            observingSendMessage(LCSendMessageEnum.SENDING,null)
+            observingSendMessage(LCSendMessageEnum.SENDING,null,null)
         }
     }
 
@@ -130,10 +128,10 @@ object LiveChatSDK {
     }
 
     @JvmStatic
-    fun observingSendMessage(state: LCSendMessageEnum, message: LCMessage?) {
+    fun observingSendMessage(state: LCSendMessageEnum, message: LCMessage?,errorMessage: String?) {
         if (listeners == null) return
         for (listener in listeners!!) {
-            listener.onSendMessageStateChange(state, message)
+            listener.onSendMessageStateChange(state, message, errorMessage)
         }
     }
 
@@ -168,7 +166,7 @@ object LiveChatSDK {
                 body.put(base64("visitor_phone"),user.phone)
                 body.put(base64("url_visit"),user.deviceName)
                 body.put(base64("token"), token)
-                LCLog.logI("Init session with: $body")
+//                LCLog.logI("Init session with: $body")
                 socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
             })
         }
@@ -193,9 +191,9 @@ object LiveChatSDK {
             jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
             jsonObject.put(base64("visitor_jid"), lcMessage.lcSession.visitorJid)
             jsonObject.put(base64("is_file"), 0)
-            LCLog.logI("Send message with: $jsonObject")
+//            LCLog.logI("Send message with: $jsonObject")
             socketClient!!.emit(SocketConstant.SEND_MESSAGE, jsonObject)
-            observingSendMessage(LCSendMessageEnum.SENDING,null)
+            observingSendMessage(LCSendMessageEnum.SENDING,null,null)
         }
     }
 
@@ -211,6 +209,7 @@ object LiveChatSDK {
 
     fun authorize(apiKey: String) {
         if (isInitialized) {
+//            LCLog.logI("AUTHENTICATION with: $apiKey")
             socket!!.emit(SocketConstant.AUTHENTICATION, apiKey)
         }
     }
@@ -226,12 +225,13 @@ object LiveChatSDK {
         try {
             socket = IO.socket(BuildConfig.BASE_URL_SOCKET)
             socket!!.on(SocketConstant.CONFIRM_CONNECT) { data ->
+//                LCLog.logI("CONFIRM_CONNECT: sv")
                 isInitialized = true
                 observingInitSDK(InitialEnum.SUCCESS,"Initial SDK successful!")
             }
             socket!!.on(SocketConstant.RESULT_AUTHENTICATION) { data ->
                 val jsonObject = data[0] as JSONObject
-                LCLog.logI("RESULT_AUTHENTICATION: $jsonObject")
+//                LCLog.logI("RESULT_AUTHENTICATION: $jsonObject")
                 val success = jsonObject.getBoolean("status")
                 isAvailable = success
                 if (!success) {
@@ -263,6 +263,8 @@ object LiveChatSDK {
                 try {
                     socketClient = IO.socket(SocketConstant.CLIENT_URL_SOCKET)
                     socketClient!!.on(SocketConstant.CONFIRM_CONNECT) { data ->
+                        LCLog.logI("CONFIRM_CONNECT CLIENT: "+currLCAccount!!.groupId)
+                        socketClient!!.emit(SocketConstant.JOIN_CLIENT,currLCAccount!!.groupId)
                         observingAuthorize(true, "Authorization successful", currLCAccount)
                     }
                     socketClient!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
@@ -291,12 +293,14 @@ object LiveChatSDK {
                             LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
                             messageRaw.getString("created_at"),
                         )
-
-                        observingSendMessage(if (success) LCSendMessageEnum.SENT_SUCCESS else LCSendMessageEnum.SENT_FAILED,if (success) lcMessage else null)
+                        observingSendMessage(
+                            if (success) LCSendMessageEnum.SENT_SUCCESS else LCSendMessageEnum.SENT_FAILED,
+                            if (success) lcMessage else null,
+                            if (success) null else "Send failed",
+                        )
                     }
                     socketClient!!.on(SocketConstant.RESULT_INITIALIZE_SESSION) { data ->
                         val jsonObject = data[0] as JSONObject
-                        LCLog.logI(jsonObject.toString())
                         val success: Boolean = jsonObject.getBoolean("status")
                         val sessionId: String = jsonObject.getString("session_id")
                         val visitorJid: String = jsonObject.getString("visitor_jid")
@@ -310,7 +314,6 @@ object LiveChatSDK {
             socket!!.on(SocketConstant.RESULT_GET_MESSAGES) {
                     data ->
                 val jsonObject = data[0] as JSONObject
-                LCLog.logI(jsonObject.toString())
                 val messagesRaw = jsonObject.getJSONArray("data")
                 val messages = ArrayList<LCMessage>()
                 for (i in 0..<messagesRaw.length()){

@@ -10,6 +10,7 @@ object SocketConstant {
     var SEND_MESSAGE = "messageChat"
     var RECEIVE_MESSAGE = "responseLiveMessageChat"
     var CONFIRM_SEND_MESSAGE = "confirmMessageChat"
+    var JOIN_CLIENT = "join"
     var INITIALIZE_SESSION = "addQueue_ChatBot"
     var RESULT_INITIALIZE_SESSION = "responseAddQueue_ChatBot"
 }
