@@ -11,7 +11,7 @@ object LCParseUtils {
             contentType,
             ""
         )
-        if(contentType == "attachment"){
+        if(contentType == "file" || contentType == "image"){
             val lcAttachments = ArrayList<LCAttachment>()
             val rawContentMessages = rawContent.getJSONArray("content-message")
             val len = rawContentMessages.length()
