@@ -161,7 +161,7 @@ object LiveChatSDK {
         return Base64.encode(rawString.toByteArray())
     }
 
-    fun initializeSession(user: LCUser) {
+    fun initializeSession(user: LCUser,supportType: LCSupportType) {
         if (isValid()) {
             FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
                 if (!task.isSuccessful) {
@@ -178,6 +178,7 @@ object LiveChatSDK {
                 body.put(base64("visitor_phone"),user.phone)
                 body.put(base64("url_visit"),user.deviceName)
                 body.put(base64("token"), token)
+                body.put(base64("support_type_id"), supportType.id)
 //                LCLog.logI("Init session with: $body")
                 socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
             })
@@ -209,12 +210,14 @@ object LiveChatSDK {
         }
     }
 
-    fun getMessages(sessionId: String) {
+    fun getMessages(sessionId: String,offset:Int,limit:Int) {
         if (isValid()) {
             var jsonObject = JSONObject()
             jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
             jsonObject.put(base64("session_id"), sessionId)
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
+            jsonObject.put(base64("offset"), offset)
+            jsonObject.put(base64("limit"), limit)
             socket!!.emit(SocketConstant.GET_MESSAGES,jsonObject)
         }
     }

@@ -1,6 +1,7 @@
 package com.mitek.build.live.chat.sdk.core
 
 import android.content.Context
+import com.mitek.build.live.chat.sdk.core.model.LCSupportType
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.user.LCSession
@@ -15,8 +16,8 @@ object LiveChatFactory {
         LiveChatSDK.sendFileMessage(paths, lcUser, lcSession)
     }
 
-    fun initializeSession(user: LCUser) {
-        LiveChatSDK.initializeSession(user)
+    fun initializeSession(user: LCUser,supportType: LCSupportType) {
+        LiveChatSDK.initializeSession(user,supportType)
     }
 
     fun authorize(apiKey: String){
@@ -31,8 +32,8 @@ object LiveChatFactory {
         LiveChatSDK.sendMessage(lcUser, message)
     }
 
-    fun getMessages(sessionId: String) {
-        LiveChatSDK.getMessages(sessionId)
+    fun getMessages(sessionId: String,offset: Int = 0,limit: Int = 5) {
+        LiveChatSDK.getMessages(sessionId,offset,limit)
     }
 
     val isOnline: Boolean
