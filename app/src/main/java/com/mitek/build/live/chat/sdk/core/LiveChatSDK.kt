@@ -276,6 +276,7 @@ object LiveChatSDK {
                     dataResp.getString("for_domain"),
                     supportTypes
                 )
+
                 try {
                     socketClient = IO.socket(SocketConstant.CLIENT_URL_SOCKET)
                     socketClient!!.on(SocketConstant.CONFIRM_CONNECT) { data ->
@@ -320,6 +321,14 @@ object LiveChatSDK {
                         val success: Boolean = jsonObject.getBoolean("status")
                         val sessionId: String = jsonObject.getString("session_id")
                         val visitorJid: String = jsonObject.getString("visitor_jid")
+                        FirebaseMessaging.getInstance().subscribeToTopic(sessionId)
+                            .addOnCompleteListener { task ->
+                                var msg = "Subscribed"
+                                if (!task.isSuccessful) {
+                                    msg = "Subscribe failed"
+                                }
+                                LCLog.logI(msg)
+                            }
                         observingInitialSession(success, LCSession(sessionId,visitorJid))
                     }
                     socketClient!!.connect()
