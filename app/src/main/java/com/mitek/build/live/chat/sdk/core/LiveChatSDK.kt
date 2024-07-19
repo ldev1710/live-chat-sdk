@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.gson.internal.LinkedTreeMap
 import com.mitek.build.live.chat.sdk.BuildConfig
 import com.mitek.build.live.chat.sdk.core.model.InitialEnum
 import com.mitek.build.live.chat.sdk.core.model.LCAccount
@@ -13,7 +14,6 @@ import com.mitek.build.live.chat.sdk.core.model.ResponseUploadFile
 import com.mitek.build.live.chat.sdk.core.network.ApiClient
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
-import com.mitek.build.live.chat.sdk.model.chat.LCContent
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
@@ -28,7 +28,6 @@ import io.socket.client.Socket
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
-import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -36,7 +35,6 @@ import retrofit2.Response
 import java.io.File
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-import kotlin.reflect.typeOf
 
 
 @SuppressLint("StaticFieldLeak")
@@ -88,19 +86,16 @@ object LiveChatSDK {
 
             call.enqueue(object : Callback<ResponseUploadFile> {
                 override fun onResponse(call: Call<ResponseUploadFile>, response: Response<ResponseUploadFile>) {
-                    LCLog.logI("Response upload file: ${response.body()}")
-                    val jsonArray = response.body()!!.data.content!!.contentMessage as JSONArray
-                    LCLog.logI("jsonArray: $jsonArray")
-                    val len = jsonArray.length()
-                    val attachments = ArrayList<LCAttachment>()
-                    for (i in 0..<len){
-                        val jsonObject = jsonArray.getJSONObject(i)
-                        LCLog.logI("jsonObject: $jsonObject")
-                        val fileName = jsonObject.getString("file-name")
-                        val extension = fileName.split(".").last()
-                        attachments.add(LCAttachment(fileName,extension,jsonObject.getString("url")))
+                    val rawAttachments = response.body()!!.data.content!!.contentMessage as ArrayList<LinkedTreeMap<String,String>>
+                    val attachments: ArrayList<LCAttachment> = ArrayList()
+                    rawAttachments.forEach{
+                        val fileName = it["file-name"]
+                        val extension = fileName!!.split(".").last()
+                        val url = it["url"]
+                        attachments.add(
+                            LCAttachment(fileName,extension,url!!)
+                        )
                     }
-                    LCLog.logI("attachments: $attachments")
                     response.body()!!.data.content!!.contentMessage = attachments
                     observingSendMessage(LCSendMessageEnum.SENT_SUCCESS,response.body()!!.data,null)
                 }
