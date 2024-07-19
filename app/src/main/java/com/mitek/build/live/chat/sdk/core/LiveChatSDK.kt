@@ -85,7 +85,7 @@ object LiveChatSDK {
             call.enqueue(object : Callback<ResponseUploadFile> {
                 override fun onResponse(call: Call<ResponseUploadFile>, response: Response<ResponseUploadFile>) {
                     LCLog.logI("Response upload file: ${response.body()}")
-                    response.body()!!.data.content!!.contentMessage = LCParseUtils.parseLCContentFrom(JSONObject(response.body()!!.data.content!!.contentMessage.toString()))
+                    response.body()!!.data.content!!.contentMessage = LCParseUtils.parseLCContentFrom(JSONObject(response.body()!!.data.content!!.contentMessage.toString().replace("/","\\/")))
                     observingSendMessage(LCSendMessageEnum.SENT_SUCCESS,response.body()!!.data,null)
                 }
                 override fun onFailure(call: Call<ResponseUploadFile>, t: Throwable) {
