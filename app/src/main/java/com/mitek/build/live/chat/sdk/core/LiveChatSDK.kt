@@ -84,7 +84,7 @@ object LiveChatSDK {
 
             call.enqueue(object : Callback<ResponseUploadFile> {
                 override fun onResponse(call: Call<ResponseUploadFile>, response: Response<ResponseUploadFile>) {
-//                    LCLog.logI("Response upload file: ${response.body()}")
+                    LCLog.logI("Response upload file: ${response.body()}")
                     observingSendMessage(LCSendMessageEnum.SENT_SUCCESS,response.body()!!.data,null)
                 }
                 override fun onFailure(call: Call<ResponseUploadFile>, t: Throwable) {
