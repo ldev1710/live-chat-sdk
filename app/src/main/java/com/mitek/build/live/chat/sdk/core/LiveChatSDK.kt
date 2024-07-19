@@ -175,6 +175,7 @@ object LiveChatSDK {
                 body.put(base64("host_name"),currLCAccount!!.hostName)
                 body.put(base64("visitor_name"),user.fullName)
                 body.put(base64("visitor_email"),user.email)
+                body.put(base64("type"),"live-chat-sdk")
                 body.put(base64("visitor_phone"),user.phone)
                 body.put(base64("url_visit"),user.deviceName)
                 body.put(base64("token"), token)
