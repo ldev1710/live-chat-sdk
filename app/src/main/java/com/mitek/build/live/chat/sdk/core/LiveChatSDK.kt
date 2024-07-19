@@ -12,6 +12,8 @@ import com.mitek.build.live.chat.sdk.core.model.LCSupportType
 import com.mitek.build.live.chat.sdk.core.model.ResponseUploadFile
 import com.mitek.build.live.chat.sdk.core.network.ApiClient
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
+import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
+import com.mitek.build.live.chat.sdk.model.chat.LCContent
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
@@ -26,6 +28,7 @@ import io.socket.client.Socket
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -33,6 +36,7 @@ import retrofit2.Response
 import java.io.File
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
+import kotlin.reflect.typeOf
 
 
 @SuppressLint("StaticFieldLeak")
@@ -85,7 +89,19 @@ object LiveChatSDK {
             call.enqueue(object : Callback<ResponseUploadFile> {
                 override fun onResponse(call: Call<ResponseUploadFile>, response: Response<ResponseUploadFile>) {
                     LCLog.logI("Response upload file: ${response.body()}")
-                    response.body()!!.data.content!!.contentMessage = LCParseUtils.parseLCContentFrom(JSONObject(response.body()!!.data.content!!.contentMessage.toString().replace("/","\\/")))
+                    val jsonArray = response.body()!!.data.content!!.contentMessage as JSONArray
+                    LCLog.logI("jsonArray: $jsonArray")
+                    val len = jsonArray.length()
+                    val attachments = ArrayList<LCAttachment>()
+                    for (i in 0..<len){
+                        val jsonObject = jsonArray.getJSONObject(i)
+                        LCLog.logI("jsonObject: $jsonObject")
+                        val fileName = jsonObject.getString("file-name")
+                        val extension = fileName.split(".").last()
+                        attachments.add(LCAttachment(fileName,extension,jsonObject.getString("url")))
+                    }
+                    LCLog.logI("attachments: $attachments")
+                    response.body()!!.data.content!!.contentMessage = attachments
                     observingSendMessage(LCSendMessageEnum.SENT_SUCCESS,response.body()!!.data,null)
                 }
                 override fun onFailure(call: Call<ResponseUploadFile>, t: Throwable) {
