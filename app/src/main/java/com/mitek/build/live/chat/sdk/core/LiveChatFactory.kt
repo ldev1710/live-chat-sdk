@@ -1,7 +1,7 @@
 package com.mitek.build.live.chat.sdk.core
 
 import android.content.Context
-import com.mitek.build.live.chat.sdk.core.model.LCSupportType
+import com.mitek.build.live.chat.sdk.model.internal.LCSupportType
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.user.LCSession
@@ -24,6 +24,10 @@ object LiveChatFactory {
         LiveChatSDK.authorize(apiKey)
     }
 
+    fun removeEventListener(listener: LiveChatListener){
+        LiveChatSDK.removeEventListener(listener)
+    }
+
     fun addEventListener(listener: LiveChatListener){
         LiveChatSDK.addEventListener(listener)
     }
@@ -36,6 +40,7 @@ object LiveChatFactory {
         LiveChatSDK.getMessages(sessionId,offset,limit)
     }
 
-    val isOnline: Boolean
-        get() = true
+    fun enableDebug(isEnable: Boolean){
+        LiveChatSDK.enableDebug(isEnable)
+    }
 }

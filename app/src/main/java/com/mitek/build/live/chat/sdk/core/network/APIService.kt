@@ -1,6 +1,6 @@
 package com.mitek.build.live.chat.sdk.core.network
 
-import com.mitek.build.live.chat.sdk.core.model.ResponseUploadFile
+import com.mitek.build.live.chat.sdk.model.internal.ResponseUploadFile
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.Multipart

@@ -7,10 +7,10 @@ import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.internal.LinkedTreeMap
 import com.mitek.build.live.chat.sdk.BuildConfig
-import com.mitek.build.live.chat.sdk.core.model.InitialEnum
-import com.mitek.build.live.chat.sdk.core.model.LCAccount
-import com.mitek.build.live.chat.sdk.core.model.LCSupportType
-import com.mitek.build.live.chat.sdk.core.model.ResponseUploadFile
+import com.mitek.build.live.chat.sdk.model.internal.InitialEnum
+import com.mitek.build.live.chat.sdk.model.internal.LCAccount
+import com.mitek.build.live.chat.sdk.model.internal.LCSupportType
+import com.mitek.build.live.chat.sdk.model.internal.ResponseUploadFile
 import com.mitek.build.live.chat.sdk.core.network.ApiClient
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
@@ -46,6 +46,7 @@ object LiveChatSDK {
     private var socket: Socket? = null
     private var socketClient: Socket? = null
     private var currLCAccount: LCAccount? = null
+    private var isDebugging = false
 
     private fun isValid(): Boolean {
         if (!(isInitialized && isAvailable)) {
@@ -107,6 +108,11 @@ object LiveChatSDK {
         }
     }
 
+    fun removeEventListener(listener: LiveChatListener){
+        if(listeners == null) return
+        listeners!!.remove(listener)
+    }
+
     @JvmStatic
     fun observingMessage(lcMessage: LCMessage) {
         if (listeners == null) return
@@ -148,7 +154,7 @@ object LiveChatSDK {
     }
 
     @JvmStatic
-    fun observingInitSDK(state: InitialEnum,message: String) {
+    fun observingInitSDK(state: InitialEnum, message: String) {
         if (listeners == null) return
         for (listener in listeners!!) {
             listener.onInitSDKStateChanged(state, message)
@@ -291,11 +297,11 @@ object LiveChatSDK {
 //                        val fromRaw = messageRaw.getJSONObject("from")
 //                        val lcMessage = LCMessage(
 //                            messageRaw.getInt("id"),
-//                            messageRaw.getString("content"),
+//                            LCParseUtils.parseLCContentFrom(messageRaw.getJSONObject("content")),
 //                            LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
 //                            messageRaw.getString("created_at"),
 //                        )
-//                    if(lcMessage.from.id != PrefUtil.getString("currVisitorJid")) observingMessage(lcMessage)
+//                        observingMessage(lcMessage)
                     }
                     socketClient!!.on(SocketConstant.CONFIRM_SEND_MESSAGE) { data ->
                         LCLog.logI("CONFIRM_SEND_MESSAGE: ${data[0]}")
@@ -364,5 +370,13 @@ object LiveChatSDK {
             LCLog.logE(e.toString())
         }
 
+    }
+
+    fun enableDebug(enable: Boolean) {
+        isDebugging = enable
+    }
+
+    fun isDebugging() : Boolean{
+        return isDebugging
     }
 }

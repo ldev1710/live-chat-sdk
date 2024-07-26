@@ -1,4 +1,4 @@
-package com.mitek.build.live.chat.sdk.core.model
+package com.mitek.build.live.chat.sdk.model.internal
 
 enum class InitialEnum {
     PROCESSING,
