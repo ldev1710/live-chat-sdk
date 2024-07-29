@@ -16,7 +16,7 @@ open class LCService : FirebaseMessagingService() {
         LCLog.logI("SDK receive fcm: $data")
         val from = JSONObject(data["sender"] as String)
         val rawContent = JSONObject(data["content"] as String)
-        val lcContent = LCParseUtils.parseLCContentFrom(rawContent)
+        val lcContent = LCParseUtils.parseLCContentFrom(rawContent,true)
         val lcMessage = LCMessage(
             data["id"]!!.toInt(),
             lcContent,
