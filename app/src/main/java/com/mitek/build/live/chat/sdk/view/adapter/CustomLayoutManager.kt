@@ -1,4 +1,4 @@
-package com.vn.build.examplelivechatsdk.adapter
+package com.mitek.build.live.chat.sdk.view.adapter
 
 import android.content.Context
 import androidx.recyclerview.widget.LinearLayoutManager

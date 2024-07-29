@@ -1,15 +1,12 @@
-package com.vn.build.examplelivechatsdk.adapter
+package com.mitek.build.live.chat.sdk.view.adapter
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.mitek.build.live.chat.sdk.R
 import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
-import com.mitek.build.live.chat.sdk.model.attachment.LCFile
-import com.squareup.picasso.Picasso
-import com.vn.build.examplelivechatsdk.R
 
 class FileListAdapter(private val files: ArrayList<LCAttachment>): RecyclerView.Adapter<FileListAdapter.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

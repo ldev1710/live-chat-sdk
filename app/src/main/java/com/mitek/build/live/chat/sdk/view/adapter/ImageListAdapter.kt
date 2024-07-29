@@ -1,12 +1,12 @@
-package com.vn.build.examplelivechatsdk.adapter
+package com.mitek.build.live.chat.sdk.view.adapter
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
+import com.mitek.build.live.chat.sdk.R
 import com.squareup.picasso.Picasso
-import com.vn.build.examplelivechatsdk.R
 
 
 class ImageListAdapter(private val urls: ArrayList<String>): RecyclerView.Adapter<ImageListAdapter.ViewHolder>() {

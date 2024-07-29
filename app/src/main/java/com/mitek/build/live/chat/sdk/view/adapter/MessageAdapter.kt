@@ -1,4 +1,4 @@
-package com.vn.build.examplelivechatsdk.adapter
+package com.mitek.build.live.chat.sdk.view.adapter
 
 import android.content.Context
 import android.view.LayoutInflater
@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.mitek.build.live.chat.sdk.R
 import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.user.LCSession
-import com.vn.build.examplelivechatsdk.R
 
 
 class MessageAdapter(private val mContext: Context,private val  mList: ArrayList<LCMessage>,private val lcSession: LCSession) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

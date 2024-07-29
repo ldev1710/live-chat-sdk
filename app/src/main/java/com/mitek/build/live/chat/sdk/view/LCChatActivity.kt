@@ -16,7 +16,7 @@ import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.util.LCLog.logI
 import com.mitek.build.live.chat.sdk.util.RealPathUtil
-import com.vn.build.examplelivechatsdk.adapter.MessageAdapter
+import com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter
 
 class LCChatActivity(val lcSession: LCSession) : AppCompatActivity() {
 
