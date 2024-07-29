@@ -22,6 +22,7 @@ import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
 import com.mitek.build.live.chat.sdk.util.LCLog
 import com.mitek.build.live.chat.sdk.util.LCParseUtils
+import com.mitek.build.live.chat.sdk.util.PrefUtil
 import com.mitek.build.live.chat.sdk.util.SocketConstant
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -181,6 +182,10 @@ object LiveChatSDK {
     fun initializeSession(user: LCUser,supportType: LCSupportType) {
         if (isValid()) {
             try {
+                var topicSubscribed = PrefUtil.instance!!.getString("topics",null)
+                if(topicSubscribed != null){
+                    FirebaseMessaging.getInstance().unsubscribeFromTopic(topicSubscribed)
+                }
                 FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
                     if (!task.isSuccessful) {
                         return@OnCompleteListener
@@ -257,6 +262,7 @@ object LiveChatSDK {
         }
         observingInitSDK(InitialEnum.PROCESSING,"LiveChatSDK initial is processing!")
         this.context = context
+        PrefUtil.init(this.context!!)
         try {
             socket = IO.socket(BuildConfig.BASE_URL_SOCKET)
             socket!!.on(SocketConstant.CONFIRM_CONNECT) { data ->
@@ -347,6 +353,7 @@ object LiveChatSDK {
                                     msg = "Subscribe failed"
                                 }
                                 LCLog.logI(msg)
+                                PrefUtil.setString("topics",sessionId)
                             }
                         observingInitialSession(success, LCSession(sessionId,visitorJid))
                     }
