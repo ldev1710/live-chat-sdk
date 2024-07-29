@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.mitek.build.live.chat.sdk.R
 import com.mitek.build.live.chat.sdk.core.LiveChatFactory
+import com.mitek.build.live.chat.sdk.core.LiveChatSDK
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
@@ -18,7 +19,7 @@ import com.mitek.build.live.chat.sdk.util.LCLog.logI
 import com.mitek.build.live.chat.sdk.util.RealPathUtil
 import com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter
 
-class LCChatActivity(val lcSession: LCSession) : AppCompatActivity() {
+class LCChatActivity : AppCompatActivity() {
 
     private lateinit var rvChat: RecyclerView
     private lateinit var adapter: MessageAdapter
@@ -36,7 +37,7 @@ class LCChatActivity(val lcSession: LCSession) : AppCompatActivity() {
                 super.onGotDetailConversation(messages)
                 logI("onGotDetailConversation: $messages")
                 messagesGlo = ArrayList(messages.reversed())
-                adapter = MessageAdapter(this@LCChatActivity,messagesGlo,lcSession)
+                adapter = MessageAdapter(this@LCChatActivity,messagesGlo,LiveChatSDK.getLCSession())
                 runOnUiThread {
                     rvChat.adapter = adapter
                     rvChat.smoothScrollToPosition(adapter.itemCount)
@@ -65,7 +66,7 @@ class LCChatActivity(val lcSession: LCSession) : AppCompatActivity() {
                 }
             }
         })
-        LiveChatFactory.getMessages(lcSession.sessionId,0,5)
+        LiveChatFactory.getMessages(LiveChatSDK.getLCSession().sessionId,0,5)
     }
 
     private fun initView(){

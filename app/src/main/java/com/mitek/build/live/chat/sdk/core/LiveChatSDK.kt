@@ -2,6 +2,7 @@ package com.mitek.build.live.chat.sdk.core
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import androidx.core.app.NotificationManagerCompat
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
@@ -24,6 +25,7 @@ import com.mitek.build.live.chat.sdk.util.LCLog
 import com.mitek.build.live.chat.sdk.util.LCParseUtils
 import com.mitek.build.live.chat.sdk.util.PrefUtil
 import com.mitek.build.live.chat.sdk.util.SocketConstant
+import com.mitek.build.live.chat.sdk.view.LCChatActivity
 import io.socket.client.IO
 import io.socket.client.Socket
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -50,6 +52,10 @@ object LiveChatSDK {
     private var isDebugging = false
     private var lcSession: LCSession? = null
     private var lcUser: LCUser? = null
+
+    fun getLCSession(): LCSession {
+        return lcSession!!
+    }
 
     private fun isValid(): Boolean {
         if (!(isInitialized && isAvailable)) {
@@ -398,5 +404,12 @@ object LiveChatSDK {
 
     fun isDebugging() : Boolean{
         return isDebugging
+    }
+
+    fun openChatView(from: Context) {
+        if(isValid()){
+            val intent = Intent(from, LCChatActivity::class.java)
+            from.startActivity(intent)
+        }
     }
 }
