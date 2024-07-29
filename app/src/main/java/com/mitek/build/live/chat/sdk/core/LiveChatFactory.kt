@@ -1,11 +1,14 @@
 package com.mitek.build.live.chat.sdk.core
 
 import android.content.Context
+import android.content.Intent
+import androidx.core.content.ContextCompat.startActivity
 import com.mitek.build.live.chat.sdk.model.internal.LCSupportType
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
+import com.mitek.build.live.chat.sdk.view.LCChatActivity
 
 object LiveChatFactory {
     fun initializeSDK(context: Context) {
@@ -14,6 +17,11 @@ object LiveChatFactory {
 
     fun sendFileMessage(paths: ArrayList<String>){
         LiveChatSDK.sendFileMessage(paths)
+    }
+
+    fun openChatView(from: Context){
+        val intent = Intent(from, LCChatActivity::class.java)
+        from.startActivity(intent)
     }
 
     fun initializeSession(user: LCUser,supportType: LCSupportType) {
