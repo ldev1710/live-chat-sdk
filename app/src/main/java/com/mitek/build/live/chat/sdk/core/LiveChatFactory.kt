@@ -44,8 +44,8 @@ object LiveChatFactory {
         LiveChatSDK.sendMessage(message)
     }
 
-    fun getMessages(sessionId: String,offset: Int = 0,limit: Int = 5) {
-        LiveChatSDK.getMessages(sessionId,offset,limit)
+    fun getMessages(offset: Int = 0,limit: Int = 5) {
+        LiveChatSDK.getMessages(offset,limit)
     }
 
     fun setUserSession(lcSession: LCSession, lcUser: LCUser){

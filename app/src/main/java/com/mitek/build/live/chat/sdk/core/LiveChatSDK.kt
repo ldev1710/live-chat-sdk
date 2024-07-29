@@ -186,7 +186,7 @@ object LiveChatSDK {
     }
 
     fun initializeSession(user: LCUser,supportType: LCSupportType) {
-        if (isValid()) {
+        if (isInitialized && isAvailable) {
             try {
                 var topicSubscribed = PrefUtil.instance!!.getString("topics",null)
                 if(topicSubscribed != null){
@@ -213,6 +213,8 @@ object LiveChatSDK {
             } catch (e: Exception){
                 LCLog.logE("Please enable and initialize Firebase in your app!")
             }
+        } else {
+            LCLog.logE("LiveChatSDK is not ready")
         }
     }
 
@@ -241,11 +243,11 @@ object LiveChatSDK {
         }
     }
 
-    fun getMessages(sessionId: String,offset:Int,limit:Int) {
+    fun getMessages(offset:Int,limit:Int) {
         if (isValid()) {
             var jsonObject = JSONObject()
             jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
-            jsonObject.put(base64("session_id"), sessionId)
+            jsonObject.put(base64("session_id"), lcSession!!.sessionId)
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
             jsonObject.put(base64("offset"), offset)
             jsonObject.put(base64("limit"), limit)
