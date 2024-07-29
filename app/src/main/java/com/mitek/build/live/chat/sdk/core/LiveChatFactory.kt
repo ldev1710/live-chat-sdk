@@ -19,8 +19,9 @@ object LiveChatFactory {
         LiveChatSDK.sendFileMessage(paths)
     }
 
-    fun openChatView(from: Context){
-        val intent = Intent(from, LCChatActivity::class.java)
+    fun openChatView(from: Context,lcSession: LCSession){
+        val activity = LCChatActivity(lcSession)
+        val intent = Intent(from, activity.javaClass)
         from.startActivity(intent)
     }
 
