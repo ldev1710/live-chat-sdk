@@ -66,7 +66,7 @@ class LCChatActivity : AppCompatActivity() {
                 }
             }
         })
-        LiveChatFactory.getMessages(LiveChatSDK.getLCSession().sessionId,0,5)
+        LiveChatFactory.getMessages(0,5)
     }
 
     private fun initView(){
