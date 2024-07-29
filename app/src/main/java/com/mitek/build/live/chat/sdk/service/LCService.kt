@@ -13,9 +13,10 @@ open class LCService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
         val data = message.data
+        LCLog.logI("SDK receive fcm: $data")
         val from = JSONObject(data["sender"] as String)
         val rawContent = JSONObject(data["content"] as String)
-        var lcContent = LCParseUtils.parseLCContentFrom(rawContent)
+        val lcContent = LCParseUtils.parseLCContentFrom(rawContent)
         val lcMessage = LCMessage(
             data["id"]!!.toInt(),
             lcContent,

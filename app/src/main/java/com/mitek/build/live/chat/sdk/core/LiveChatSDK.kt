@@ -134,6 +134,9 @@ object LiveChatSDK {
     @JvmStatic
     fun observingMessage(lcMessage: LCMessage) {
         if (listeners == null) return
+        if(lcMessage.from!!.id == lcSession!!.visitorJid){
+            return
+        }
         for (listener in listeners!!) {
             listener.onReceiveMessage(lcMessage)
         }
