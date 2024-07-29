@@ -47,16 +47,27 @@ object LiveChatSDK {
     private var socketClient: Socket? = null
     private var currLCAccount: LCAccount? = null
     private var isDebugging = false
+    private var lcSession: LCSession? = null
+    private var lcUser: LCUser? = null
 
     private fun isValid(): Boolean {
         if (!(isInitialized && isAvailable)) {
             LCLog.logE("LiveChatSDK is not ready")
             return false
         }
+        if(lcUser == null || lcSession == null){
+            LCLog.logE("User session not has been set yet. Please call LiveChatFactory.setUserSession")
+            return false
+        }
         return true
     }
 
-    fun sendFileMessage(paths: ArrayList<String>, lcUser:LCUser, lcSession: LCSession){
+    fun setUserSession(lcSession: LCSession, lcUser: LCUser){
+        this.lcUser = lcUser
+        this.lcSession = lcSession
+    }
+
+    fun sendFileMessage(paths: ArrayList<String>){
         if(isValid()){
             if(paths.size > 3){
                 LCLog.logE("You are only allowed to send a maximum of 3 files")
@@ -77,11 +88,11 @@ object LiveChatSDK {
                 currLCAccount!!.groupId,
                 0,
                 "live-chat-sdk",
-                lcSession.visitorJid,
-                lcUser.fullName,
-                lcSession.sessionId,
+                lcSession!!.visitorJid,
+                lcUser!!.fullName,
+                lcSession!!.sessionId,
                 currLCAccount!!.hostName,
-                lcSession.visitorJid,
+                lcSession!!.visitorJid,
                 1,
             )
 
@@ -169,26 +180,28 @@ object LiveChatSDK {
 
     fun initializeSession(user: LCUser,supportType: LCSupportType) {
         if (isValid()) {
-            FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-                if (!task.isSuccessful) {
-                    return@OnCompleteListener
-                }
-
-                // Get new FCM registration token
-                val token = task.result
-                val body = JSONObject()
-                body.put(base64("groupid"),currLCAccount!!.groupId.toString())
-                body.put(base64("host_name"),currLCAccount!!.hostName)
-                body.put(base64("visitor_name"),user.fullName)
-                body.put(base64("visitor_email"),user.email)
-                body.put(base64("type"),"live-chat-sdk")
-                body.put(base64("visitor_phone"),user.phone)
-                body.put(base64("url_visit"),user.deviceName)
-                body.put(base64("token"), token)
-                body.put(base64("support_type_id"), supportType.id)
+            try {
+                FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        return@OnCompleteListener
+                    }
+                    val token = task.result
+                    val body = JSONObject()
+                    body.put(base64("groupid"),currLCAccount!!.groupId.toString())
+                    body.put(base64("host_name"),currLCAccount!!.hostName)
+                    body.put(base64("visitor_name"),user.fullName)
+                    body.put(base64("visitor_email"),user.email)
+                    body.put(base64("type"),"live-chat-sdk")
+                    body.put(base64("visitor_phone"),user.phone)
+                    body.put(base64("url_visit"),user.deviceName)
+                    body.put(base64("token"), token)
+                    body.put(base64("support_type_id"), supportType.id)
 //                LCLog.logI("Init session with: $body")
-                socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
-            })
+                    socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
+                })
+            } catch (e: Exception){
+                LCLog.logE("Please enable and initialize Firebase in your app!")
+            }
         }
     }
 
@@ -197,7 +210,7 @@ object LiveChatSDK {
         listeners!!.add(listener)
     }
 
-    fun sendMessage(lcUser: LCUser, lcMessage: LCMessageSend) {
+    fun sendMessage(lcMessage: LCMessageSend) {
         if (isValid()) {
             val jsonObject = JSONObject()
             jsonObject.put(base64("body"),lcMessage.content)
@@ -205,11 +218,11 @@ object LiveChatSDK {
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
             jsonObject.put(base64("reply"), 0)
             jsonObject.put(base64("type"), "live-chat-sdk")
-            jsonObject.put(base64("from"), lcMessage.lcSession.visitorJid)
-            jsonObject.put(base64("name"), lcUser.fullName)
-            jsonObject.put(base64("session_id"), lcMessage.lcSession.sessionId)
+            jsonObject.put(base64("from"), lcSession!!.visitorJid)
+            jsonObject.put(base64("name"), lcUser!!.fullName)
+            jsonObject.put(base64("session_id"), lcSession!!.sessionId)
             jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
-            jsonObject.put(base64("visitor_jid"), lcMessage.lcSession.visitorJid)
+            jsonObject.put(base64("visitor_jid"), lcSession!!.visitorJid)
             jsonObject.put(base64("is_file"), 0)
 //            LCLog.logI("Send message with: $jsonObject")
             socketClient!!.emit(SocketConstant.SEND_MESSAGE, jsonObject)
