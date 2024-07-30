@@ -2,6 +2,7 @@ package com.mitek.build.live.chat.sdk.service
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.mitek.build.live.chat.sdk.core.LiveChatSDK
 import com.mitek.build.live.chat.sdk.core.LiveChatSDK.observingMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCSender
@@ -14,15 +15,20 @@ open class LCService : FirebaseMessagingService() {
         super.onMessageReceived(message)
         val data = message.data
         LCLog.logI("SDK receive fcm: $data")
-        val from = JSONObject(data["sender"] as String)
-        val rawContent = JSONObject(data["content"] as String)
-        val lcContent = LCParseUtils.parseLCContentFrom(rawContent,true)
-        val lcMessage = LCMessage(
-            data["id"]!!.toInt(),
-            lcContent,
-            LCSender(from.getString("id"),from.getString("name")),
-            data["created_at"]!!,
-        )
-        observingMessage(lcMessage)
+        if(data["software"] == "live-chat-sdk"){
+            val from = JSONObject(data["sender"] as String)
+            if(from.getString("id") == LiveChatSDK.getLCSession().visitorJid){
+                return
+            }
+            val rawContent = JSONObject(data["content"] as String)
+            val lcContent = LCParseUtils.parseLCContentFrom(rawContent,true)
+            val lcMessage = LCMessage(
+                data["id"]!!.toInt(),
+                lcContent,
+                LCSender(from.getString("id"),from.getString("name")),
+                data["created_at"]!!,
+            )
+            observingMessage(lcMessage)
+        }
     }
 }
