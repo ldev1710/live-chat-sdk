@@ -21,7 +21,6 @@ object LiveChatFactory {
 
     fun openChatView(from: Context){
         LiveChatSDK.openChatView(from)
-
     }
 
     fun initializeSession(user: LCUser,supportType: LCSupportType) {

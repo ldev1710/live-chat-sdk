@@ -3,6 +3,7 @@ package com.mitek.build.live.chat.sdk.core.network
 import com.mitek.build.live.chat.sdk.model.internal.ResponseUploadFile
 import okhttp3.MultipartBody
 import retrofit2.Call
+import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -11,6 +12,7 @@ interface ApiService {
     @Multipart
     @POST("upload")
     fun uploadFile(
+        @Header("Authorization") token: String,
         @Part body: ArrayList<MultipartBody.Part>,
         @Part("add_message_archive") messageArchive: String,
         @Part("groupid") groupId: Int,

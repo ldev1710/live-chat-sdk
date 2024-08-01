@@ -49,6 +49,7 @@ object LiveChatSDK {
     private var socket: Socket? = null
     private var socketClient: Socket? = null
     private var currLCAccount: LCAccount? = null
+    private lateinit var accessToken: String
     private var isDebugging = false
     private var lcSession: LCSession? = null
     private var lcUser: LCUser? = null
@@ -90,6 +91,7 @@ object LiveChatSDK {
                 }
             }
             val call = ApiClient.apiService.uploadFile(
+                "Bearer $accessToken",
                 multipartBodyFile,
                 "",
                 currLCAccount!!.groupId,
@@ -209,6 +211,7 @@ object LiveChatSDK {
                     body.put(base64("visitor_phone"),user.phone)
                     body.put(base64("url_visit"),user.deviceName)
                     body.put(base64("token"), token)
+                    body.put(base64("access_token"), accessToken)
                     body.put(base64("support_type_id"), supportType.id)
 //                LCLog.logI("Init session with: $body")
                     socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
@@ -234,13 +237,13 @@ object LiveChatSDK {
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
             jsonObject.put(base64("reply"), 0)
             jsonObject.put(base64("type"), "live-chat-sdk")
+            jsonObject.put(base64("access_token"), accessToken)
             jsonObject.put(base64("from"), lcSession!!.visitorJid)
             jsonObject.put(base64("name"), lcUser!!.fullName)
             jsonObject.put(base64("session_id"), lcSession!!.sessionId)
             jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
             jsonObject.put(base64("visitor_jid"), lcSession!!.visitorJid)
             jsonObject.put(base64("is_file"), 0)
-//            LCLog.logI("Send message with: $jsonObject")
             socketClient!!.emit(SocketConstant.SEND_MESSAGE, jsonObject)
             observingSendMessage(LCSendMessageEnum.SENDING,null,null)
         }
@@ -253,6 +256,7 @@ object LiveChatSDK {
             jsonObject.put(base64("session_id"), lcSession!!.sessionId)
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
             jsonObject.put(base64("offset"), offset)
+            jsonObject.put(base64("access_token"), accessToken)
             jsonObject.put(base64("limit"), limit)
             socket!!.emit(SocketConstant.GET_MESSAGES,jsonObject)
         }
@@ -260,7 +264,6 @@ object LiveChatSDK {
 
     fun authorize(apiKey: String) {
         if (isInitialized) {
-//            LCLog.logI("AUTHENTICATION with: $apiKey")
             socket!!.emit(SocketConstant.AUTHENTICATION, apiKey)
         }
     }
@@ -277,22 +280,20 @@ object LiveChatSDK {
         try {
             socket = IO.socket(BuildConfig.BASE_URL_SOCKET)
             socket!!.on(SocketConstant.CONFIRM_CONNECT) { data ->
-//                LCLog.logI("CONFIRM_CONNECT: sv")
                 isInitialized = true
                 observingInitSDK(InitialEnum.SUCCESS,"Initial SDK successful!")
             }
             socket!!.on(SocketConstant.RESULT_AUTHENTICATION) { data ->
                 val jsonObject = data[0] as JSONObject
-//                LCLog.logI("RESULT_AUTHENTICATION: $jsonObject")
                 val success = jsonObject.getBoolean("status")
                 isAvailable = success
                 if (!success) {
-                    //Observe failed
                     observingAuthorize(false, "Un-authorized",null)
                     return@on
                 }
                 val dataResp = jsonObject.getJSONObject("data")
                 SocketConstant.CLIENT_URL_SOCKET = dataResp.getString("domain_socket")
+                accessToken = dataResp.getString("access_token")
                 val supportTypesRaw = dataResp.getJSONArray("support_type")
                 val supportTypes: ArrayList<LCSupportType> = ArrayList()
                 for(i in 0..<supportTypesRaw.length()){

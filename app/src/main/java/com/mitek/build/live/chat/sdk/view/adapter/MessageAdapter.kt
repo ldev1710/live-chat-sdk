@@ -1,9 +1,15 @@
 package com.mitek.build.live.chat.sdk.view.adapter
 
+import android.annotation.SuppressLint
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
@@ -53,6 +59,10 @@ class MessageAdapter(private val mContext: Context,private val  mList: ArrayList
                 holder.cardView.visibility = View.GONE
             }
             else -> {
+                holder.tvContentMessage.setOnLongClickListener { view ->
+                    showPopupMenu(view,lcMessage)
+                    true
+                }
                 holder.tvContentMessage.text = lcMessage.content!!.contentMessage as String
                 holder.rvImg.visibility = View.GONE
             }
@@ -60,6 +70,39 @@ class MessageAdapter(private val mContext: Context,private val  mList: ArrayList
         holder.tvCreatedAt.text = lcMessage.timeCreated
     }
 
+    @SuppressLint("NotifyDataSetChanged")
+    private fun showPopupMenu(view: View, message: LCMessage) {
+        val popupMenu = PopupMenu(mContext, view)
+        popupMenu.menuInflater.inflate(R.menu.menu_context, popupMenu.menu)
+        val textCopy = if(message.content!!.contentType == "image" || message.content!!.contentMessage == "file"){
+            (message.content!!.contentMessage as ArrayList<LCAttachment>).first().url
+        } else {
+            message.content!!.contentMessage as String
+        }
+
+        popupMenu.setOnMenuItemClickListener { item: MenuItem ->
+            when (item.itemId) {
+                R.id.action_copy -> {
+                    copyToClipboard(textCopy)
+                    true
+                }
+                R.id.action_delete -> {
+                    // Thực hiện hành động xoá tin nhắn
+                    mList.remove(message)
+                    notifyDataSetChanged()
+                    true
+                }
+                else -> false
+            }
+        }
+        popupMenu.show()
+    }
+
+    private fun copyToClipboard(text: String) {
+        val clipboard = mContext.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip = ClipData.newPlainText("Copied Text", text)
+        clipboard.setPrimaryClip(clip)
+    }
     private fun initTarget(holder: ViewHolderTarget, lcMessage: LCMessage){
         when (lcMessage.content!!.contentType) {
             "image" -> {
@@ -75,13 +118,16 @@ class MessageAdapter(private val mContext: Context,private val  mList: ArrayList
             }
             "file" -> {
                 var attachments = lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
-                val urls = ArrayList<String>()
                 val adapter = FileListAdapter(attachments)
                 holder.rvImg.adapter = adapter
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
                 holder.cardView.visibility = View.GONE
             }
             else -> {
+                holder.tvContentMessage.setOnLongClickListener { view ->
+                    showPopupMenu(view,lcMessage)
+                    true
+                }
                 holder.tvContentMessage.text = lcMessage.content!!.contentMessage as String
                 holder.rvImg.visibility = View.GONE
             }
