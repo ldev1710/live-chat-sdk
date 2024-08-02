@@ -10,7 +10,7 @@ import retrofit2.http.Part
 
 interface ApiService {
     @Multipart
-    @POST("upload")
+    @POST("uploadSDK")
     fun uploadFile(
         @Header("Authorization") token: String,
         @Part body: ArrayList<MultipartBody.Part>,
