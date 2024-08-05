@@ -1,11 +1,13 @@
 package com.mitek.build.live.chat.sdk.view
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.mitek.build.live.chat.sdk.R
 import com.mitek.build.live.chat.sdk.core.LiveChatFactory
@@ -23,24 +25,62 @@ class LCChatActivity : AppCompatActivity() {
 
     private lateinit var rvChat: RecyclerView
     private lateinit var adapter: MessageAdapter
-    private lateinit var messagesGlo: ArrayList<LCMessage>
+    private lateinit var messagesGlo: ArrayList<LCMessage?>
     private lateinit var edtMessage: EditText
     private lateinit var btnSend: ImageView
     private lateinit var btnAttach: ImageView
+    private var page :Int = 1
+    private var isInit = true
+    private var isCanLoadMore = true
+    private var isFetchingMore = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
         initView()
         LiveChatFactory.addEventListener(object : LiveChatListener() {
+            @SuppressLint("NotifyDataSetChanged")
             override fun onGotDetailConversation(messages: ArrayList<LCMessage>) {
                 super.onGotDetailConversation(messages)
                 logI("onGotDetailConversation: $messages")
-                messagesGlo = ArrayList(messages.reversed())
-                adapter = MessageAdapter(this@LCChatActivity,messagesGlo,LiveChatSDK.getLCSession())
+                isCanLoadMore = messages.size % 5 == 0
                 runOnUiThread {
-                    rvChat.adapter = adapter
-                    rvChat.smoothScrollToPosition(adapter.itemCount)
+                    if(isInit){
+                        messagesGlo = ArrayList(messages.reversed())
+                        adapter = MessageAdapter(this@LCChatActivity,messagesGlo,LiveChatSDK.getLCSession())
+                        rvChat.adapter = adapter
+                        rvChat.smoothScrollToPosition(adapter.itemCount)
+                        rvChat.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                                super.onScrolled(recyclerView, dx, dy)
+                                if(!isCanLoadMore) return
+                                if(isInit){
+                                    isInit = false
+                                    return
+                                }
+                                if(isFetchingMore){
+                                    isFetchingMore = false
+                                    return
+                                }
+                                val layoutManager = recyclerView.layoutManager
+                                if (layoutManager is LinearLayoutManager) {
+                                    if (layoutManager.findFirstCompletelyVisibleItemPosition() == 0) {
+                                        page++
+                                        LiveChatFactory.getMessages(offset = page * 5)
+                                        isFetchingMore = true
+                                        messagesGlo.add(0,null)
+                                        adapter.notifyDataSetChanged()
+                                    }
+                                }
+                            }
+                        })
+                    } else {
+                        runOnUiThread {
+                            messagesGlo.removeAt(0)
+                            messagesGlo.addAll(0,ArrayList(messages.reversed()))
+                            adapter.notifyItemRangeChanged(0,messages.size)
+                        }
+                    }
                 }
             }
 
