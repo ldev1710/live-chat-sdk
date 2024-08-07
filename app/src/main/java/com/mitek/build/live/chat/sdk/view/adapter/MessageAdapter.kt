@@ -17,14 +17,13 @@ import com.mitek.build.live.chat.sdk.R
 import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.user.LCSession
+import com.vn.build.examplelivechatsdk.LCMessageEntity
+import com.vn.build.examplelivechatsdk.LCStatusMessage
 
 
-class MessageAdapter(
-    private val mContext: Context,
-    private val mList: ArrayList<LCMessage?>,
-    private val lcSession: LCSession
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MessageAdapter(private val mContext: Context, private val  mList: ArrayList<LCMessageEntity?>, private val lcSession: LCSession) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    // create new views
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(
             when (viewType) {
@@ -43,10 +42,10 @@ class MessageAdapter(
 
         when (holder.itemViewType) {
             VIEW_TYPE_MESSAGE_SENT -> {
-                initSelf(holder as ViewHolderSelf, item!!)
+                initSelf(holder as ViewHolderSelf, item!!, position)
             }
             VIEW_TYPE_MESSAGE_RECEIVED -> {
-                initTarget(holder as ViewHolderTarget, item!!)
+                initTarget(holder as ViewHolderTarget, item!!.lcMessage)
             }
             else -> {
 
@@ -81,12 +80,22 @@ class MessageAdapter(
         val clip = ClipData.newPlainText("Copied Text", text)
         clipboard.setPrimaryClip(clip)
     }
-    private fun initSelf(holder: ViewHolderSelf, lcMessage: LCMessage){
+    private fun initSelf(holder: ViewHolderSelf, lcMessageEntity: LCMessageEntity, position: Int){
         holder.rvImg.visibility = View.GONE
         holder.cardView.visibility = View.GONE
-        when (lcMessage.content!!.contentType) {
+        holder.tvStatusSend.visibility = View.GONE
+        if(lcMessageEntity.status == LCStatusMessage.sending) {
+            holder.tvStatusSend.text = "Đang gửi"
+            holder.tvStatusSend.visibility = View.VISIBLE
+        } else {
+            holder.tvStatusSend.text = "Đã gửi"
+            if(position == mList.size-1){
+                holder.tvStatusSend.visibility = View.VISIBLE
+            }
+        }
+        when (lcMessageEntity.lcMessage.content!!.contentType) {
             "image" -> {
-                val attachments = lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
+                val attachments = lcMessageEntity.lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
                 val urls = ArrayList<String>()
 
                 attachments.forEach {
@@ -98,7 +107,7 @@ class MessageAdapter(
                 holder.rvImg.visibility = View.VISIBLE
             }
             "file" -> {
-                val attachments = lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
+                val attachments = lcMessageEntity.lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
                 val adapter = FileListAdapter(attachments)
                 holder.rvImg.adapter = adapter
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
@@ -106,14 +115,14 @@ class MessageAdapter(
             }
             else -> {
                 holder.tvContentMessage.setOnLongClickListener { view ->
-                    showPopupMenu(view,lcMessage)
+                    showPopupMenu(view,lcMessageEntity.lcMessage)
                     true
                 }
-                holder.tvContentMessage.text = lcMessage.content!!.contentMessage as String
+                holder.tvContentMessage.text = lcMessageEntity.lcMessage.content!!.contentMessage as String
                 holder.cardView.visibility = View.VISIBLE
             }
         }
-        holder.tvCreatedAt.text = lcMessage.timeCreated
+        holder.tvCreatedAt.text = lcMessageEntity.lcMessage.timeCreated
     }
 
     private fun initTarget(holder: ViewHolderTarget, lcMessage: LCMessage){
@@ -162,7 +171,7 @@ class MessageAdapter(
     override fun getItemViewType(position: Int): Int {
         return if(mList[position]==null) {
             VIEW_TYPE_FETCHING
-        } else if(mList[position]!!.from!!.id == lcSession.visitorJid){
+        } else if(mList[position]!!.lcMessage.from!!.id == lcSession.visitorJid){
             VIEW_TYPE_MESSAGE_SENT
         } else {
             VIEW_TYPE_MESSAGE_RECEIVED
@@ -172,6 +181,7 @@ class MessageAdapter(
     class ViewHolderSelf(item: View) : RecyclerView.ViewHolder(item) {
         val tvContentMessage: TextView = itemView.findViewById(R.id.content_message)
         val tvCreatedAt: TextView = itemView.findViewById(R.id.created_at)
+        val tvStatusSend: TextView = itemView.findViewById(R.id.status_send)
         val cardView: CardView = itemView.findViewById(R.id.cardContent)
         val rvImg: RecyclerView = itemView.findViewById(R.id.rv_img)
     }

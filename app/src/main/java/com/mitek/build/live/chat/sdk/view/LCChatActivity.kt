@@ -16,20 +16,23 @@ import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
-import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.util.LCLog.logI
 import com.mitek.build.live.chat.sdk.util.RealPathUtil
 import com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter
+import com.vn.build.examplelivechatsdk.LCMessageEntity
+import com.vn.build.examplelivechatsdk.LCStatusMessage
+
 
 class LCChatActivity : AppCompatActivity() {
 
     private lateinit var rvChat: RecyclerView
     private lateinit var adapter: MessageAdapter
-    private lateinit var messagesGlo: ArrayList<LCMessage?>
+    private lateinit var messagesGlo: ArrayList<LCMessageEntity?>
     private lateinit var edtMessage: EditText
     private lateinit var btnSend: ImageView
     private lateinit var btnAttach: ImageView
     private var page :Int = 1
+    private var limit = 10
     private var isInit = true
     private var isCanLoadMore = true
     private var isFetchingMore = false
@@ -46,7 +49,9 @@ class LCChatActivity : AppCompatActivity() {
                 isCanLoadMore = messages.size % 5 == 0
                 runOnUiThread {
                     if(isInit){
-                        messagesGlo = ArrayList(messages.reversed())
+                        messages.reversed().map {
+                            messagesGlo.add(LCMessageEntity(lcMessage = it, LCStatusMessage.sent))
+                        }
                         adapter = MessageAdapter(this@LCChatActivity,messagesGlo,LiveChatSDK.getLCSession())
                         rvChat.adapter = adapter
                         rvChat.smoothScrollToPosition(adapter.itemCount)
@@ -66,7 +71,7 @@ class LCChatActivity : AppCompatActivity() {
                                 if (layoutManager is LinearLayoutManager) {
                                     if (layoutManager.findFirstCompletelyVisibleItemPosition() == 0) {
                                         page++
-                                        LiveChatFactory.getMessages(offset = page * 5)
+                                        LiveChatFactory.getMessages(offset = page * limit,limit)
                                         isFetchingMore = true
                                         messagesGlo.add(0,null)
                                         adapter.notifyDataSetChanged()
@@ -77,18 +82,30 @@ class LCChatActivity : AppCompatActivity() {
                     } else {
                         runOnUiThread {
                             messagesGlo.removeAt(0)
-                            messagesGlo.addAll(0,ArrayList(messages.reversed()))
+                            var tmp = ArrayList<LCMessageEntity>()
+                            messages.reversed().map {
+                                tmp.add(LCMessageEntity(lcMessage = it,LCStatusMessage.sent))
+                            }
+                            messagesGlo.addAll(0,tmp)
                             adapter.notifyItemRangeChanged(0,messages.size)
                         }
                     }
                 }
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             override fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?, errorMessage: String?) {
                 super.onSendMessageStateChange(state, message, errorMessage)
                 logI("onSendMessageStateChange: $state | $message")
                 if(state == LCSendMessageEnum.SENT_SUCCESS){
-                    messagesGlo.add(message!!)
+                    val indexFound = messagesGlo.indexOfFirst { it != null && it.lcMessage.mappingId == message!!.mappingId }
+                    messagesGlo[indexFound]!!.status = LCStatusMessage.sent
+                    runOnUiThread {
+                        Thread.sleep(3000)
+                        adapter.notifyItemRangeChanged(indexFound,1)
+                    }
+                } else if(state == LCSendMessageEnum.SENDING){
+                    messagesGlo.add(LCMessageEntity(lcMessage = message!!,LCStatusMessage.sending))
                     runOnUiThread {
                         adapter.notifyDataSetChanged()
                         rvChat.smoothScrollToPosition(adapter.itemCount)
@@ -96,17 +113,18 @@ class LCChatActivity : AppCompatActivity() {
                 }
             }
 
+            @SuppressLint("NotifyDataSetChanged")
             override fun onReceiveMessage(lcMessage: LCMessage) {
                 super.onReceiveMessage(lcMessage)
                 logI("onReceiveMessage: $lcMessage")
-                messagesGlo.add(lcMessage)
+                messagesGlo.add(LCMessageEntity(lcMessage=lcMessage,LCStatusMessage.sent))
                 runOnUiThread {
                     adapter.notifyDataSetChanged()
                     rvChat.smoothScrollToPosition(adapter.itemCount)
                 }
             }
         })
-        LiveChatFactory.getMessages(0,5)
+        LiveChatFactory.getMessages(0,limit)
     }
 
     private fun initView(){
@@ -127,6 +145,7 @@ class LCChatActivity : AppCompatActivity() {
             intent.setType("image/*")
             startActivityForResult(intent, 0)
         }
+        messagesGlo = ArrayList()
     }
     private lateinit var paths: ArrayList<String>
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
