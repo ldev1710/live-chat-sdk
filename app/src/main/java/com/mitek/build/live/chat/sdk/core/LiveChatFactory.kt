@@ -15,8 +15,8 @@ object LiveChatFactory {
         LiveChatSDK.initialize(context)
     }
 
-    fun sendFileMessage(paths: ArrayList<String>){
-        LiveChatSDK.sendFileMessage(paths)
+    fun sendFileMessage(paths: ArrayList<String>,contentType: String){
+        LiveChatSDK.sendFileMessage(paths,contentType)
     }
 
     fun openChatView(from: Context){

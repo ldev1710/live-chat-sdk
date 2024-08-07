@@ -14,6 +14,7 @@ interface ApiService {
     fun uploadFile(
         @Header("Authorization") token: String,
         @Part body: ArrayList<MultipartBody.Part>,
+        @Part("mapping_id") mappingId: String,
         @Part("add_message_archive") messageArchive: String,
         @Part("groupid") groupId: Int,
         @Part("reply") reply: Int,

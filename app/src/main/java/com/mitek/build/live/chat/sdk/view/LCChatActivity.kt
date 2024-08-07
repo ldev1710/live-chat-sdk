@@ -144,7 +144,7 @@ class LCChatActivity : AppCompatActivity() {
                 paths.add(path)
             }
             logI(paths.toString())
-            LiveChatFactory.sendFileMessage(paths)
+            LiveChatFactory.sendFileMessage(paths,"image")
         }
     }
 }

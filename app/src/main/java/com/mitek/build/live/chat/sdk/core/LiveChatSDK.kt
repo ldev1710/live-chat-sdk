@@ -15,6 +15,7 @@ import com.mitek.build.live.chat.sdk.model.internal.ResponseUploadFile
 import com.mitek.build.live.chat.sdk.core.network.ApiClient
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
+import com.mitek.build.live.chat.sdk.model.chat.LCContent
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
@@ -36,6 +37,9 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.UUID
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
@@ -75,7 +79,7 @@ object LiveChatSDK {
         this.lcSession = lcSession
     }
 
-    fun sendFileMessage(paths: ArrayList<String>){
+    fun sendFileMessage(paths: ArrayList<String>,contentTye: String){
         if(isValid()){
             if(paths.size > 3){
                 LCLog.logE("You are only allowed to send a maximum of 3 files")
@@ -90,9 +94,11 @@ object LiveChatSDK {
                     multipartBodyFile.add(MultipartBody.Part.createFormData("body", fileName, requestBodyFile))
                 }
             }
+            val mappingId = UUID.randomUUID().toString()
             val call = ApiClient.apiService.uploadFile(
                 "Bearer $accessToken",
                 multipartBodyFile,
+                mappingId,
                 "",
                 currLCAccount!!.groupId,
                 0,
@@ -124,7 +130,23 @@ object LiveChatSDK {
                     observingSendMessage(LCSendMessageEnum.SENT_FAILED,null, t.message)
                 }
             })
-            observingSendMessage(LCSendMessageEnum.SENDING,null,null)
+            val currentTime = Date()
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            val formattedTime = formatter.format(currentTime)
+            var lcAttachments  = ArrayList<LCAttachment>()
+            paths.map { it ->
+                val fileName = it.split('/').last()
+                val extension = fileName.split('.').last()
+                lcAttachments.add(LCAttachment(fileName,extension,""))
+            }
+            val message = LCMessage(
+                -1,
+                mappingId,
+                LCContent(contentTye,lcAttachments),
+                LCSender(lcSession!!.visitorJid, lcUser!!.fullName),
+                formattedTime,
+            )
+            observingSendMessage(LCSendMessageEnum.SENDING,message,null)
         }
     }
 
@@ -232,7 +254,9 @@ object LiveChatSDK {
     fun sendMessage(lcMessage: LCMessageSend) {
         if (isValid()) {
             val jsonObject = JSONObject()
+            val mappingId = UUID.randomUUID().toString()
             jsonObject.put(base64("body"),lcMessage.content)
+            jsonObject.put(base64("mapping_id"),mappingId)
             jsonObject.put(base64("add_message_archive"),"")
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
             jsonObject.put(base64("reply"), 0)
@@ -245,7 +269,17 @@ object LiveChatSDK {
             jsonObject.put(base64("visitor_jid"), lcSession!!.visitorJid)
             jsonObject.put(base64("is_file"), 0)
             socketClient!!.emit(SocketConstant.SEND_MESSAGE, jsonObject)
-            observingSendMessage(LCSendMessageEnum.SENDING,null,null)
+            val currentTime = Date()
+            val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            val formattedTime = formatter.format(currentTime)
+            val message = LCMessage(
+                -1,
+                mappingId,
+                LCContent("text",lcMessage.content),
+                LCSender(lcSession!!.visitorJid, lcUser!!.fullName),
+                formattedTime,
+            )
+            observingSendMessage(LCSendMessageEnum.SENDING,message,null)
         }
     }
 
@@ -339,10 +373,12 @@ object LiveChatSDK {
                         val jsonObject = data[0] as JSONObject
                         val success = jsonObject.getBoolean("status")
                         val messageRaw = jsonObject.getJSONObject("data")
+                        val mappingId = messageRaw.getString("status")
                         val fromRaw = messageRaw.getJSONObject("from")
                         val rawContent = messageRaw.getJSONObject("content")
                         val lcMessage = LCMessage(
                             messageRaw.getInt("id"),
+                            mappingId,
                             LCParseUtils.parseLCContentFrom(rawContent),
                             LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
                             messageRaw.getString("created_at"),
@@ -386,6 +422,7 @@ object LiveChatSDK {
                     messages.add(
                         LCMessage(
                             jsonMessage.getInt("id"),
+                            null,
                             LCParseUtils.parseLCContentFrom(rawContent),
                             LCSender(
                                 jsonSender.getString("id"),
