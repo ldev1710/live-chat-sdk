@@ -5,6 +5,7 @@ import java.util.UUID
 
 class LCMessage {
     var id: Int = 0
+    @SerializedName("mapping_id")
     var mappingId: String?
     var content: LCContent? = null
     var from: LCSender? = null

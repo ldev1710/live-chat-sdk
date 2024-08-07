@@ -373,7 +373,7 @@ object LiveChatSDK {
                         val jsonObject = data[0] as JSONObject
                         val success = jsonObject.getBoolean("status")
                         val messageRaw = jsonObject.getJSONObject("data")
-                        val mappingId = messageRaw.getString("status")
+                        val mappingId = messageRaw.getString("mapping_id")
                         val fromRaw = messageRaw.getJSONObject("from")
                         val rawContent = messageRaw.getJSONObject("content")
                         val lcMessage = LCMessage(
