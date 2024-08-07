@@ -24,6 +24,7 @@ open class LCService : FirebaseMessagingService() {
             val lcContent = LCParseUtils.parseLCContentFrom(rawContent,true)
             val lcMessage = LCMessage(
                 data["id"]!!.toInt(),
+                null,
                 lcContent,
                 LCSender(from.getString("id"),from.getString("name")),
                 data["created_at"]!!,
