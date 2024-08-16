@@ -16,6 +16,7 @@ open class LCService : FirebaseMessagingService() {
         val data = message.data
         LCLog.logI("SDK receive fcm: $data")
         if(data["software"] == "live-chat-sdk"){
+            if(!LiveChatSDK.isReceiveFromFCM()) return
             val from = JSONObject(data["sender"] as String)
             if(from.getString("id") == LiveChatSDK.getLCSession().visitorJid){
                 return

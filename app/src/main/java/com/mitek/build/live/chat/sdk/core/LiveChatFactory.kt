@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat.startActivity
 import com.mitek.build.live.chat.sdk.model.internal.LCSupportType
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
+import com.mitek.build.live.chat.sdk.model.internal.MessageReceiveSource
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
 import com.mitek.build.live.chat.sdk.view.LCChatActivity
@@ -45,6 +46,10 @@ object LiveChatFactory {
 
     fun getMessages(offset: Int = 0,limit: Int = 5) {
         LiveChatSDK.getMessages(offset,limit)
+    }
+
+    fun setMessageReceiveSource(sources: ArrayList<MessageReceiveSource>){
+        LiveChatSDK.setMessageReceiveSource(sources)
     }
 
     fun setUserSession(lcSession: LCSession, lcUser: LCUser){

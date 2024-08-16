@@ -14,13 +14,14 @@ import com.mitek.build.live.chat.sdk.core.LiveChatFactory
 import com.mitek.build.live.chat.sdk.core.LiveChatSDK
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
+import com.mitek.build.live.chat.sdk.model.chat.LCMessageEntity
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
+import com.mitek.build.live.chat.sdk.model.chat.LCStatusMessage
+import com.mitek.build.live.chat.sdk.model.internal.MessageReceiveSource
 import com.mitek.build.live.chat.sdk.util.LCLog.logI
 import com.mitek.build.live.chat.sdk.util.RealPathUtil
 import com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter
-import com.vn.build.examplelivechatsdk.LCMessageEntity
-import com.vn.build.examplelivechatsdk.LCStatusMessage
 
 
 class LCChatActivity : AppCompatActivity() {
@@ -128,6 +129,9 @@ class LCChatActivity : AppCompatActivity() {
     }
 
     private fun initView(){
+        var sources = ArrayList<MessageReceiveSource>()
+        sources.add(MessageReceiveSource.socket)
+        LiveChatSDK.setMessageReceiveSource(sources)
         rvChat = findViewById(R.id.rv_chat)
         edtMessage = findViewById(R.id.edt_message)
         btnSend = findViewById(R.id.btnSend)

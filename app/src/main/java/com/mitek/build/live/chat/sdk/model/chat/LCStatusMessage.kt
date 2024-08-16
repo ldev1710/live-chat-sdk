@@ -1,4 +1,4 @@
-package com.vn.build.examplelivechatsdk
+package com.mitek.build.live.chat.sdk.model.chat
 
 enum class LCStatusMessage {
     sending,

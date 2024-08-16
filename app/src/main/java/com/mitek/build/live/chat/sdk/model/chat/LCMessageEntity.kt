@@ -1,6 +1,4 @@
-package com.vn.build.examplelivechatsdk
-
-import com.mitek.build.live.chat.sdk.model.chat.LCMessage
+package com.mitek.build.live.chat.sdk.model.chat
 
 class LCMessageEntity (
     var lcMessage: LCMessage,

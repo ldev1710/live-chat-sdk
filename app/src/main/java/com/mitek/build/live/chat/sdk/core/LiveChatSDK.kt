@@ -20,6 +20,7 @@ import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.chat.LCSender
+import com.mitek.build.live.chat.sdk.model.internal.MessageReceiveSource
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
 import com.mitek.build.live.chat.sdk.util.LCLog
@@ -53,6 +54,8 @@ object LiveChatSDK {
     private var socket: Socket? = null
     private var socketClient: Socket? = null
     private var currLCAccount: LCAccount? = null
+    private var isReceiveFromSocket: Boolean = false
+    private var isReceiveFromFCM: Boolean = false
     private lateinit var accessToken: String
     private var isDebugging = false
     private var lcSession: LCSession? = null
@@ -60,6 +63,10 @@ object LiveChatSDK {
 
     fun getLCSession(): LCSession {
         return lcSession!!
+    }
+
+    fun isReceiveFromFCM() : Boolean {
+        return isReceiveFromFCM
     }
 
     private fun isValid(): Boolean {
@@ -235,7 +242,6 @@ object LiveChatSDK {
                     body.put(base64("token"), token)
                     body.put(base64("access_token"), accessToken)
                     body.put(base64("support_type_id"), supportType.id)
-//                LCLog.logI("Init session with: $body")
                     socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
                 })
             } catch (e: Exception){
@@ -356,17 +362,20 @@ object LiveChatSDK {
                         observingAuthorize(true, "Authorization successful", currLCAccount)
                     }
                     socketClient!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
-//                        LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
-//                        val jsonObject = data[0] as JSONObject
-//                        val messageRaw = jsonObject.getJSONObject("data")
-//                        val fromRaw = messageRaw.getJSONObject("from")
-//                        val lcMessage = LCMessage(
-//                            messageRaw.getInt("id"),
-//                            LCParseUtils.parseLCContentFrom(messageRaw.getJSONObject("content")),
-//                            LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
-//                            messageRaw.getString("created_at"),
-//                        )
-//                        observingMessage(lcMessage)
+                        if(!isReceiveFromSocket) return@on
+                        LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
+                        val jsonObject = data[0] as JSONObject
+                        val messageRaw = jsonObject.getJSONObject("data")
+                        val fromRaw = messageRaw.getJSONObject("from")
+                        val lcMessage = LCMessage(
+                            messageRaw.getInt("id"),
+                            null,
+                            LCParseUtils.parseLCContentFrom(messageRaw.getJSONObject("content")),
+                            LCSender(fromRaw.getString("id"),fromRaw.getString("name")),
+                            messageRaw.getString("created_at"),
+                        )
+                        if(lcMessage.from?.id == lcSession?.visitorJid) return@on
+                        observingMessage(lcMessage)
                     }
                     socketClient!!.on(SocketConstant.CONFIRM_SEND_MESSAGE) { data ->
                         LCLog.logI("CONFIRM_SEND_MESSAGE: ${data[0]}")
@@ -454,5 +463,10 @@ object LiveChatSDK {
             val intent = Intent(from, LCChatActivity::class.java)
             from.startActivity(intent)
         }
+    }
+
+    fun setMessageReceiveSource(sources: java.util.ArrayList<MessageReceiveSource>) {
+        isReceiveFromSocket = sources.contains(MessageReceiveSource.socket)
+        isReceiveFromFCM = sources.contains(MessageReceiveSource.fcm)
     }
 }

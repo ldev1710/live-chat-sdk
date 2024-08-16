@@ -16,9 +16,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mitek.build.live.chat.sdk.R
 import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
+import com.mitek.build.live.chat.sdk.model.chat.LCMessageEntity
+import com.mitek.build.live.chat.sdk.model.chat.LCStatusMessage
 import com.mitek.build.live.chat.sdk.model.user.LCSession
-import com.vn.build.examplelivechatsdk.LCMessageEntity
-import com.vn.build.examplelivechatsdk.LCStatusMessage
 
 
 class MessageAdapter(private val mContext: Context, private val  mList: ArrayList<LCMessageEntity?>, private val lcSession: LCSession) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
