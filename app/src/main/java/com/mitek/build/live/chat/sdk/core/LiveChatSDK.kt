@@ -120,6 +120,15 @@ object LiveChatSDK {
 
             call.enqueue(object : Callback<ResponseUploadFile> {
                 override fun onResponse(call: Call<ResponseUploadFile>, response: Response<ResponseUploadFile>) {
+                    if(response.body()!!.error){
+                        observingSendMessage(
+                            LCSendMessageEnum.SENT_FAILED,
+                            null,
+                            response.body()!!.message,
+                            response.body()!!.data.mappingId
+                        )
+                        return
+                    }
                     val rawAttachments = response.body()!!.data.content!!.contentMessage as ArrayList<LinkedTreeMap<String,String>>
                     val attachments: ArrayList<LCAttachment> = ArrayList()
                     rawAttachments.forEach{
@@ -222,7 +231,7 @@ object LiveChatSDK {
     fun initializeSession(user: LCUser,supportType: LCSupportType) {
         if (isInitialized && isAvailable) {
             try {
-                var topicSubscribed = PrefUtil.instance!!.getString("topics",null)
+                val topicSubscribed = PrefUtil.instance!!.getString("topics",null)
                 if(topicSubscribed != null){
                     FirebaseMessaging.getInstance().unsubscribeFromTopic(topicSubscribed)
                 }

@@ -4,12 +4,11 @@ import com.google.gson.annotations.SerializedName
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 
 data class ResponseUploadFile(
-    @SerializedName("status")
-    val status: Boolean,
+    val error: Boolean,
     val message: String?,
     val data: LCMessage
 ) {
     override fun toString(): String {
-        return "ResponseUploadFile(status=$status, message=$message, data=$data)"
+        return "ResponseUploadFile(error=$error, message=$message, data=$data)"
     }
 }
