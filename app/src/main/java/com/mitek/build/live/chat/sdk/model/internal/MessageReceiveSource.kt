@@ -1,6 +1,6 @@
 package com.mitek.build.live.chat.sdk.model.internal
 
-enum class MessageReceiveSource {
+enum class LCMessageReceiveSource {
     fcm,
     socket
 }

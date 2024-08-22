@@ -20,7 +20,7 @@ import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.chat.LCSender
-import com.mitek.build.live.chat.sdk.model.internal.MessageReceiveSource
+import com.mitek.build.live.chat.sdk.model.internal.LCMessageReceiveSource
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
 import com.mitek.build.live.chat.sdk.util.LCLog
@@ -131,10 +131,10 @@ object LiveChatSDK {
                         )
                     }
                     response.body()!!.data.content!!.contentMessage = attachments
-                    observingSendMessage(LCSendMessageEnum.SENT_SUCCESS,response.body()!!.data,null)
+                    observingSendMessage(LCSendMessageEnum.SENT_SUCCESS,response.body()!!.data,null,response.body()!!.data.mappingId)
                 }
                 override fun onFailure(call: Call<ResponseUploadFile>, t: Throwable) {
-                    observingSendMessage(LCSendMessageEnum.SENT_FAILED,null, t.message)
+                    observingSendMessage(LCSendMessageEnum.SENT_FAILED,null, t.message,null)
                 }
             })
             val currentTime = Date()
@@ -153,7 +153,7 @@ object LiveChatSDK {
                 LCSender(lcSession!!.visitorJid, lcUser!!.fullName),
                 formattedTime,
             )
-            observingSendMessage(LCSendMessageEnum.SENDING,message,null)
+            observingSendMessage(LCSendMessageEnum.SENDING,message,null,message.mappingId)
         }
     }
 
@@ -198,10 +198,10 @@ object LiveChatSDK {
     }
 
     @JvmStatic
-    fun observingSendMessage(state: LCSendMessageEnum, message: LCMessage?,errorMessage: String?) {
+    fun observingSendMessage(state: LCSendMessageEnum, message: LCMessage?,errorMessage: String?,mappingId: String?) {
         if (listeners == null) return
         for (listener in listeners!!) {
-            listener.onSendMessageStateChange(state, message, errorMessage)
+            listener.onSendMessageStateChange(state, message, errorMessage, mappingId)
         }
     }
 
@@ -285,7 +285,7 @@ object LiveChatSDK {
                 LCSender(lcSession!!.visitorJid, lcUser!!.fullName),
                 formattedTime,
             )
-            observingSendMessage(LCSendMessageEnum.SENDING,message,null)
+            observingSendMessage(LCSendMessageEnum.SENDING,message,null,message.mappingId)
         }
     }
 
@@ -396,6 +396,7 @@ object LiveChatSDK {
                             if (success) LCSendMessageEnum.SENT_SUCCESS else LCSendMessageEnum.SENT_FAILED,
                             if (success) lcMessage else null,
                             if (success) null else "Send failed",
+                            lcMessage.mappingId,
                         )
                     }
                     socketClient!!.on(SocketConstant.RESULT_INITIALIZE_SESSION) { data ->
@@ -465,8 +466,8 @@ object LiveChatSDK {
         }
     }
 
-    fun setMessageReceiveSource(sources: java.util.ArrayList<MessageReceiveSource>) {
-        isReceiveFromSocket = sources.contains(MessageReceiveSource.socket)
-        isReceiveFromFCM = sources.contains(MessageReceiveSource.fcm)
+    fun setMessageReceiveSource(sources: ArrayList<LCMessageReceiveSource>) {
+        isReceiveFromSocket = sources.contains(LCMessageReceiveSource.socket)
+        isReceiveFromFCM = sources.contains(LCMessageReceiveSource.fcm)
     }
 }

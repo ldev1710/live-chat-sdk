@@ -1,15 +1,12 @@
 package com.mitek.build.live.chat.sdk.core
 
 import android.content.Context
-import android.content.Intent
-import androidx.core.content.ContextCompat.startActivity
-import com.mitek.build.live.chat.sdk.model.internal.LCSupportType
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
-import com.mitek.build.live.chat.sdk.model.internal.MessageReceiveSource
+import com.mitek.build.live.chat.sdk.model.internal.LCMessageReceiveSource
+import com.mitek.build.live.chat.sdk.model.internal.LCSupportType
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
-import com.mitek.build.live.chat.sdk.view.LCChatActivity
 
 object LiveChatFactory {
     fun initializeSDK(context: Context) {
@@ -48,7 +45,7 @@ object LiveChatFactory {
         LiveChatSDK.getMessages(offset,limit)
     }
 
-    fun setMessageReceiveSource(sources: ArrayList<MessageReceiveSource>){
+    fun setMessageReceiveSource(sources: ArrayList<LCMessageReceiveSource>){
         LiveChatSDK.setMessageReceiveSource(sources)
     }
 

@@ -18,11 +18,10 @@ import com.mitek.build.live.chat.sdk.model.chat.LCMessageEntity
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.chat.LCStatusMessage
-import com.mitek.build.live.chat.sdk.model.internal.MessageReceiveSource
+import com.mitek.build.live.chat.sdk.model.internal.LCMessageReceiveSource
 import com.mitek.build.live.chat.sdk.util.LCLog.logI
 import com.mitek.build.live.chat.sdk.util.RealPathUtil
 import com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter
-
 
 class LCChatActivity : AppCompatActivity() {
 
@@ -83,7 +82,7 @@ class LCChatActivity : AppCompatActivity() {
                     } else {
                         runOnUiThread {
                             messagesGlo.removeAt(0)
-                            var tmp = ArrayList<LCMessageEntity>()
+                            val tmp = ArrayList<LCMessageEntity>()
                             messages.reversed().map {
                                 tmp.add(LCMessageEntity(lcMessage = it,LCStatusMessage.sent))
                             }
@@ -95,21 +94,30 @@ class LCChatActivity : AppCompatActivity() {
             }
 
             @SuppressLint("NotifyDataSetChanged")
-            override fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?, errorMessage: String?) {
-                super.onSendMessageStateChange(state, message, errorMessage)
+            override fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?, errorMessage: String?,mappingId: String?) {
+                super.onSendMessageStateChange(state, message, errorMessage,mappingId)
                 logI("onSendMessageStateChange: $state | $message")
-                if(state == LCSendMessageEnum.SENT_SUCCESS){
-                    val indexFound = messagesGlo.indexOfFirst { it != null && it.lcMessage.mappingId == message!!.mappingId }
-                    messagesGlo[indexFound]!!.status = LCStatusMessage.sent
-                    runOnUiThread {
-                        Thread.sleep(3000)
-                        adapter.notifyItemRangeChanged(indexFound,1)
+                when (state) {
+                    LCSendMessageEnum.SENT_SUCCESS -> {
+                        val indexFound = messagesGlo.indexOfFirst { it != null && it.lcMessage.mappingId == message!!.mappingId }
+                        messagesGlo[indexFound]!!.status = LCStatusMessage.sent
+                        runOnUiThread {
+                            adapter.notifyItemRangeChanged(indexFound,1)
+                        }
                     }
-                } else if(state == LCSendMessageEnum.SENDING){
-                    messagesGlo.add(LCMessageEntity(lcMessage = message!!,LCStatusMessage.sending))
-                    runOnUiThread {
-                        adapter.notifyDataSetChanged()
-                        rvChat.smoothScrollToPosition(adapter.itemCount)
+                    LCSendMessageEnum.SENDING -> {
+                        messagesGlo.add(LCMessageEntity(lcMessage = message!!,LCStatusMessage.sending))
+                        runOnUiThread {
+                            adapter.notifyDataSetChanged()
+                            rvChat.smoothScrollToPosition(adapter.itemCount)
+                        }
+                    }
+                    else -> {
+                        val indexFound = messagesGlo.indexOfFirst { it != null && it.lcMessage.mappingId == message!!.mappingId }
+                        messagesGlo[indexFound]!!.status = LCStatusMessage.failed
+                        runOnUiThread {
+                            adapter.notifyItemRangeChanged(indexFound,1)
+                        }
                     }
                 }
             }
@@ -129,9 +137,6 @@ class LCChatActivity : AppCompatActivity() {
     }
 
     private fun initView(){
-        var sources = ArrayList<MessageReceiveSource>()
-        sources.add(MessageReceiveSource.socket)
-        LiveChatSDK.setMessageReceiveSource(sources)
         rvChat = findViewById(R.id.rv_chat)
         edtMessage = findViewById(R.id.edt_message)
         btnSend = findViewById(R.id.btnSend)

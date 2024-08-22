@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -87,11 +88,15 @@ class MessageAdapter(private val mContext: Context, private val  mList: ArrayLis
         if(lcMessageEntity.status == LCStatusMessage.sending) {
             holder.tvStatusSend.text = "Đang gửi"
             holder.tvStatusSend.visibility = View.VISIBLE
-        } else {
+        } else if(lcMessageEntity.status == LCStatusMessage.sent){
             holder.tvStatusSend.text = "Đã gửi"
             if(position == mList.size-1){
                 holder.tvStatusSend.visibility = View.VISIBLE
             }
+        } else {
+            holder.tvStatusSend.text = "Không thể gửi"
+            holder.tvStatusSend.setTextColor(Color.RED)
+            holder.tvStatusSend.visibility = View.VISIBLE
         }
         when (lcMessageEntity.lcMessage.content!!.contentType) {
             "image" -> {
