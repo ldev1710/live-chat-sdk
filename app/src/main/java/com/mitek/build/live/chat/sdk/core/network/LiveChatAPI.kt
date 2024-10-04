@@ -1,15 +1,16 @@
 package com.mitek.build.live.chat.sdk.core.network
 
 import com.mitek.build.live.chat.sdk.BuildConfig
+import com.mitek.build.live.chat.sdk.util.SocketConstant
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object LiveChatAPI {
-    private const val BASE_URL = BuildConfig.BASE_URL_SOCKET
+    var retrofit: Retrofit? = null
 
-    val retrofit: Retrofit by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
+    fun setUrl(url: String){
+        retrofit = Retrofit.Builder()
+            .baseUrl(url)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -17,6 +18,6 @@ object LiveChatAPI {
 
 object ApiClient {
     val apiService: ApiService by lazy {
-        LiveChatAPI.retrofit.create(ApiService::class.java)
+        LiveChatAPI.retrofit!!.create(ApiService::class.java)
     }
 }

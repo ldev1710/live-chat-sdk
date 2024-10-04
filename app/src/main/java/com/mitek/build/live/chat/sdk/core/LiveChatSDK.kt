@@ -10,6 +10,7 @@ import com.mitek.build.live.chat.sdk.model.internal.LCAccount
 import com.mitek.build.live.chat.sdk.model.internal.LCSupportType
 import com.mitek.build.live.chat.sdk.model.internal.ResponseUploadFile
 import com.mitek.build.live.chat.sdk.core.network.ApiClient
+import com.mitek.build.live.chat.sdk.core.network.LiveChatAPI
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.attachment.LCAttachment
 import com.mitek.build.live.chat.sdk.model.chat.LCContent
@@ -142,7 +143,7 @@ object LiveChatSDK {
             val currentTime = Date()
             val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
             val formattedTime = formatter.format(currentTime)
-            var lcAttachments  = ArrayList<LCAttachment>()
+            val lcAttachments  = ArrayList<LCAttachment>()
             paths.map { it ->
                 val fileName = it.split('/').last()
                 val extension = fileName.split('.').last()
@@ -320,6 +321,7 @@ object LiveChatSDK {
                 }
                 val dataResp = jsonObject.getJSONObject("data")
                 SocketConstant.CLIENT_URL_SOCKET = dataResp.getString("domain_socket")
+                LiveChatAPI.setUrl(SocketConstant.CLIENT_URL_SOCKET)
                 accessToken = dataResp.getString("access_token")
                 val supportTypesRaw = dataResp.getJSONArray("support_type")
                 val supportTypes: ArrayList<LCSupportType> = ArrayList()
