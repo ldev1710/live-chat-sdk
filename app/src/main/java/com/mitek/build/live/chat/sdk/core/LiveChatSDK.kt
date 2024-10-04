@@ -81,6 +81,7 @@ object LiveChatSDK {
     fun setUserSession(lcSession: LCSession, lcUser: LCUser){
         this.lcUser = lcUser
         this.lcSession = lcSession
+        socketClient!!.emit(SocketConstant.JOIN_SESSION,lcSession.sessionId)
     }
 
     fun sendFileMessage(paths: ArrayList<String>,contentTye: String){
