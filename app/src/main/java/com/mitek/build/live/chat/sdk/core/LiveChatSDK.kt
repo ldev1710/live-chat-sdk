@@ -30,6 +30,7 @@ import io.socket.client.Socket
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
@@ -97,16 +98,16 @@ object LiveChatSDK {
             val call = ApiClient.apiService.uploadFile(
                 "Bearer $accessToken",
                 multipartBodyFile,
-                mappingId,
+                mappingId.toRequestBody(MultipartBody.FORM),
                 "",
                 currLCAccount!!.groupId,
                 0,
-                "live-chat-sdk",
-                lcSession!!.visitorJid,
-                lcUser!!.fullName,
-                lcSession!!.sessionId,
-                currLCAccount!!.hostName,
-                lcSession!!.visitorJid,
+                "live-chat-sdk".toRequestBody(MultipartBody.FORM),
+                lcSession!!.visitorJid.toRequestBody(MultipartBody.FORM),
+                lcUser!!.fullName.toRequestBody(MultipartBody.FORM),
+                lcSession!!.sessionId.toRequestBody(MultipartBody.FORM),
+                currLCAccount!!.hostName.toRequestBody(MultipartBody.FORM),
+                lcSession!!.visitorJid.toRequestBody(MultipartBody.FORM),
                 1,
             )
 
