@@ -351,7 +351,7 @@ object LiveChatSDK {
                         LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
                         val jsonObject = data[0] as JSONObject
                         val messageRaw = jsonObject.getJSONObject("data")
-                        val fromRaw = messageRaw.getJSONObject("from")
+                        val fromRaw = messageRaw.getJSONObject("sender")
                         val lcMessage = LCMessage(
                             messageRaw.getInt("id"),
                             null,
