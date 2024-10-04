@@ -132,10 +132,10 @@ object LiveChatSDK {
                         )
                     }
                     response.body()!!.data.content!!.contentMessage = attachments
-                    observingSendMessage(LCSendMessageEnum.SENT_SUCCESS,response.body()!!.data,null,response.body()!!.data.mappingId)
+                    observingSendMessage(LCSendMessageEnum.SENT_SUCCESS,response.body()!!.data,null,mappingId)
                 }
                 override fun onFailure(call: Call<ResponseUploadFile>, t: Throwable) {
-                    observingSendMessage(LCSendMessageEnum.SENT_FAILED,null, t.message,null)
+                    observingSendMessage(LCSendMessageEnum.SENT_FAILED,null, t.message,mappingId)
                 }
             })
             val currentTime = Date()
