@@ -394,8 +394,9 @@ object LiveChatSDK {
                     socketClient!!.on(SocketConstant.RESULT_INITIALIZE_SESSION) { data ->
                         val jsonObject = data[0] as JSONObject
                         val success: Boolean = jsonObject.getBoolean("status")
-                        val sessionId: String = jsonObject.getString("session_id")
-                        val visitorJid: String = jsonObject.getString("visitor_jid")
+                        val jsonData: JSONObject = jsonObject.getJSONObject("data")
+                        val sessionId: String = jsonData.getString("session_id")
+                        val visitorJid: String = jsonData.getString("visitor_jid")
                         observingInitialSession(success, LCSession(sessionId,visitorJid))
                     }
                     socketClient!!.connect()
