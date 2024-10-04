@@ -21,8 +21,8 @@ object LiveChatFactory {
         LiveChatSDK.openChatView(from)
     }
 
-    fun initializeSession(user: LCUser,supportType: LCSupportType) {
-        LiveChatSDK.initializeSession(user,supportType)
+    fun initializeSession(user: LCUser,tokenFCM: String, supportType: LCSupportType) {
+        LiveChatSDK.initializeSession(user,tokenFCM,supportType)
     }
 
     fun authorize(apiKey: String){

@@ -3,9 +3,6 @@ package com.mitek.build.live.chat.sdk.core
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import androidx.core.app.NotificationManagerCompat
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.gson.internal.LinkedTreeMap
 import com.mitek.build.live.chat.sdk.BuildConfig
 import com.mitek.build.live.chat.sdk.model.internal.InitialEnum
@@ -228,31 +225,21 @@ object LiveChatSDK {
         return Base64.encode(rawString.toByteArray())
     }
 
-    fun initializeSession(user: LCUser,supportType: LCSupportType) {
+    fun initializeSession(user: LCUser,tokenFCM: String, supportType: LCSupportType) {
         if (isInitialized && isAvailable) {
             try {
-                val topicSubscribed = PrefUtil.instance!!.getString("topics",null)
-                if(topicSubscribed != null){
-                    FirebaseMessaging.getInstance().unsubscribeFromTopic(topicSubscribed)
-                }
-                FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-                    if (!task.isSuccessful) {
-                        return@OnCompleteListener
-                    }
-                    val token = task.result
-                    val body = JSONObject()
-                    body.put(base64("groupid"),currLCAccount!!.groupId.toString())
-                    body.put(base64("host_name"),currLCAccount!!.hostName)
-                    body.put(base64("visitor_name"),user.fullName)
-                    body.put(base64("visitor_email"),user.email)
-                    body.put(base64("type"),"live-chat-sdk")
-                    body.put(base64("visitor_phone"),user.phone)
-                    body.put(base64("url_visit"),user.deviceName)
-                    body.put(base64("token"), token)
-                    body.put(base64("access_token"), accessToken)
-                    body.put(base64("support_type_id"), supportType.id)
-                    socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
-                })
+                val body = JSONObject()
+                body.put(base64("groupid"),currLCAccount!!.groupId.toString())
+                body.put(base64("host_name"),currLCAccount!!.hostName)
+                body.put(base64("visitor_name"),user.fullName)
+                body.put(base64("visitor_email"),user.email)
+                body.put(base64("type"),"live-chat-sdk")
+                body.put(base64("visitor_phone"),user.phone)
+                body.put(base64("url_visit"),user.deviceName)
+                body.put(base64("token"), tokenFCM)
+                body.put(base64("access_token"), accessToken)
+                body.put(base64("support_type_id"), supportType.id)
+                socketClient!!.emit(SocketConstant.INITIALIZE_SESSION, body)
             } catch (e: Exception){
                 LCLog.logE("Please enable and initialize Firebase in your app!")
             }
@@ -318,11 +305,6 @@ object LiveChatSDK {
     }
 
     fun initialize(context: Context) {
-        val isNotificationGranted = NotificationManagerCompat.from(context).areNotificationsEnabled()
-        if (!isNotificationGranted) {
-            observingInitSDK(InitialEnum.FAILED,"LiveChatSDK require post notification permission to use!")
-            return
-        }
         observingInitSDK(InitialEnum.PROCESSING,"LiveChatSDK initial is processing!")
         this.context = context
         PrefUtil.init(this.context!!)
@@ -413,15 +395,6 @@ object LiveChatSDK {
                         val success: Boolean = jsonObject.getBoolean("status")
                         val sessionId: String = jsonObject.getString("session_id")
                         val visitorJid: String = jsonObject.getString("visitor_jid")
-                        FirebaseMessaging.getInstance().subscribeToTopic(sessionId)
-                            .addOnCompleteListener { task ->
-                                var msg = "Subscribed"
-                                if (!task.isSuccessful) {
-                                    msg = "Subscribe failed"
-                                }
-                                LCLog.logI(msg)
-                                PrefUtil.setString("topics",sessionId)
-                            }
                         observingInitialSession(success, LCSession(sessionId,visitorJid))
                     }
                     socketClient!!.connect()
