@@ -103,6 +103,8 @@ class LCChatActivity : AppCompatActivity() {
                 when (state) {
                     LCSendMessageEnum.SENT_SUCCESS -> {
                         val indexFound = messagesGlo.indexOfFirst { it != null && it.lcMessage.mappingId == message!!.mappingId }
+                        if(indexFound==-1) return
+                        messagesGlo[indexFound]!!.lcMessage = message!!
                         messagesGlo[indexFound]!!.status = LCStatusMessage.sent
                         runOnUiThread {
                             adapter.notifyItemRangeChanged(indexFound,1)

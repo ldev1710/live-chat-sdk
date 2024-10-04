@@ -351,7 +351,6 @@ object LiveChatSDK {
                         observingAuthorize(true, "Authorization successful", currLCAccount)
                     }
                     socketClient!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
-                        LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
                         val jsonObject = data[0] as JSONObject
                         val messageRaw = jsonObject.getJSONObject("data")
                         val fromRaw = messageRaw.getJSONObject("sender")
@@ -363,6 +362,7 @@ object LiveChatSDK {
                             messageRaw.getString("created_at"),
                         )
                         if(lcMessage.from?.id == lcSession?.visitorJid) return@on
+                        LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
                         observingMessage(lcMessage)
                     }
                     socketClient!!.on(SocketConstant.CONFIRM_SEND_MESSAGE) { data ->
@@ -388,6 +388,7 @@ object LiveChatSDK {
                         )
                     }
                     socketClient!!.on(SocketConstant.RESULT_INITIALIZE_SESSION) { data ->
+                        LCLog.logI("RESULT_INITIALIZE_SESSION: ${data[0]}")
                         val jsonObject = data[0] as JSONObject
                         val success: Boolean = jsonObject.getBoolean("status")
                         val jsonData: JSONObject = jsonObject.getJSONObject("data")
