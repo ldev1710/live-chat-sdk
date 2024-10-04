@@ -16,6 +16,7 @@ class ImageListAdapter(private val urls: ArrayList<String>): RecyclerView.Adapte
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        if(urls[position].isEmpty()) return
         Picasso.get()
             .load(urls[position])
             .into(holder.imageView)

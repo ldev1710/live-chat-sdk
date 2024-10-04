@@ -51,8 +51,6 @@ object LiveChatSDK {
     private var socket: Socket? = null
     private var socketClient: Socket? = null
     private var currLCAccount: LCAccount? = null
-    private var isReceiveFromSocket: Boolean = false
-    private var isReceiveFromFCM: Boolean = false
     private lateinit var accessToken: String
     private var isDebugging = false
     private var lcSession: LCSession? = null
@@ -60,10 +58,6 @@ object LiveChatSDK {
 
     fun getLCSession(): LCSession {
         return lcSession!!
-    }
-
-    fun isReceiveFromFCM() : Boolean {
-        return isReceiveFromFCM
     }
 
     private fun isValid(): Boolean {
@@ -354,7 +348,6 @@ object LiveChatSDK {
                         observingAuthorize(true, "Authorization successful", currLCAccount)
                     }
                     socketClient!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
-                        if(!isReceiveFromSocket) return@on
                         LCLog.logI("RECEIVE_MESSAGE: ${data[0]}")
                         val jsonObject = data[0] as JSONObject
                         val messageRaw = jsonObject.getJSONObject("data")
@@ -448,10 +441,5 @@ object LiveChatSDK {
             val intent = Intent(from, LCChatActivity::class.java)
             from.startActivity(intent)
         }
-    }
-
-    fun setMessageReceiveSource(sources: ArrayList<LCMessageReceiveSource>) {
-        isReceiveFromSocket = sources.contains(LCMessageReceiveSource.socket)
-        isReceiveFromFCM = sources.contains(LCMessageReceiveSource.fcm)
     }
 }

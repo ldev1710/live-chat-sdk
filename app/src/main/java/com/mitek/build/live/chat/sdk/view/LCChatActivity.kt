@@ -18,7 +18,6 @@ import com.mitek.build.live.chat.sdk.model.chat.LCMessageEntity
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.chat.LCStatusMessage
-import com.mitek.build.live.chat.sdk.model.internal.LCMessageReceiveSource
 import com.mitek.build.live.chat.sdk.util.LCLog.logI
 import com.mitek.build.live.chat.sdk.util.RealPathUtil
 import com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter
@@ -52,7 +51,11 @@ class LCChatActivity : AppCompatActivity() {
                         messages.reversed().map {
                             messagesGlo.add(LCMessageEntity(lcMessage = it, LCStatusMessage.sent))
                         }
-                        adapter = MessageAdapter(this@LCChatActivity,messagesGlo,LiveChatSDK.getLCSession())
+                        adapter = com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter(
+                            this@LCChatActivity,
+                            messagesGlo,
+                            LiveChatSDK.getLCSession()
+                        )
                         rvChat.adapter = adapter
                         rvChat.smoothScrollToPosition(adapter.itemCount)
                         rvChat.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -84,7 +87,7 @@ class LCChatActivity : AppCompatActivity() {
                             messagesGlo.removeAt(0)
                             val tmp = ArrayList<LCMessageEntity>()
                             messages.reversed().map {
-                                tmp.add(LCMessageEntity(lcMessage = it,LCStatusMessage.sent))
+                                tmp.add(LCMessageEntity(lcMessage = it, LCStatusMessage.sent))
                             }
                             messagesGlo.addAll(0,tmp)
                             adapter.notifyItemRangeChanged(0,messages.size)
@@ -106,7 +109,10 @@ class LCChatActivity : AppCompatActivity() {
                         }
                     }
                     LCSendMessageEnum.SENDING -> {
-                        messagesGlo.add(LCMessageEntity(lcMessage = message!!,LCStatusMessage.sending))
+                        messagesGlo.add(
+                            LCMessageEntity(lcMessage = message!!,
+                                LCStatusMessage.sending)
+                        )
                         runOnUiThread {
                             adapter.notifyDataSetChanged()
                             rvChat.smoothScrollToPosition(adapter.itemCount)
@@ -126,7 +132,7 @@ class LCChatActivity : AppCompatActivity() {
             override fun onReceiveMessage(lcMessage: LCMessage) {
                 super.onReceiveMessage(lcMessage)
                 logI("onReceiveMessage: $lcMessage")
-                messagesGlo.add(LCMessageEntity(lcMessage=lcMessage,LCStatusMessage.sent))
+                messagesGlo.add(LCMessageEntity(lcMessage=lcMessage, LCStatusMessage.sent))
                 runOnUiThread {
                     adapter.notifyDataSetChanged()
                     rvChat.smoothScrollToPosition(adapter.itemCount)

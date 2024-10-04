@@ -45,10 +45,6 @@ object LiveChatFactory {
         LiveChatSDK.getMessages(offset,limit)
     }
 
-    fun setMessageReceiveSource(sources: ArrayList<LCMessageReceiveSource>){
-        LiveChatSDK.setMessageReceiveSource(sources)
-    }
-
     fun setUserSession(lcSession: LCSession, lcUser: LCUser){
         LiveChatSDK.setUserSession(lcSession,lcUser)
     }
