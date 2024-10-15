@@ -30,6 +30,7 @@ class LCChatActivity : AppCompatActivity() {
     private lateinit var edtMessage: EditText
     private lateinit var btnSend: ImageView
     private lateinit var btnAttach: ImageView
+    private lateinit var btnBack: ImageView
     private var page :Int = 1
     private var limit = 10
     private var isInit = true
@@ -45,16 +46,17 @@ class LCChatActivity : AppCompatActivity() {
             override fun onGotDetailConversation(messages: ArrayList<LCMessage>) {
                 super.onGotDetailConversation(messages)
                 logI("onGotDetailConversation: $messages")
-                isCanLoadMore = messages.size % 5 == 0
+                isCanLoadMore = messages.isNotEmpty() && messages.size % limit == 0
                 runOnUiThread {
                     if(isInit){
                         messages.reversed().map {
                             messagesGlo.add(LCMessageEntity(lcMessage = it, LCStatusMessage.sent))
                         }
-                        adapter = com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter(
+                        adapter = MessageAdapter(
                             this@LCChatActivity,
                             messagesGlo,
-                            LiveChatSDK.getLCSession()
+                            LiveChatSDK.getLCSession(),
+                            LiveChatFactory.getScripts(),
                         )
                         rvChat.adapter = adapter
                         rvChat.smoothScrollToPosition(adapter.itemCount)
@@ -99,7 +101,7 @@ class LCChatActivity : AppCompatActivity() {
             @SuppressLint("NotifyDataSetChanged")
             override fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?, errorMessage: String?,mappingId: String?) {
                 super.onSendMessageStateChange(state, message, errorMessage,mappingId)
-                logI("onSendMessageStateChange: $state | $message")
+                logI("onSendMessageStateChange: $state | $message | $mappingId")
                 when (state) {
                     LCSendMessageEnum.SENT_SUCCESS -> {
                         val indexFound = messagesGlo.indexOfFirst { it != null && it.lcMessage.mappingId == message!!.mappingId }
@@ -149,10 +151,16 @@ class LCChatActivity : AppCompatActivity() {
         edtMessage = findViewById(R.id.edt_message)
         btnSend = findViewById(R.id.btnSend)
         btnAttach = findViewById(R.id.btnAttach)
+        btnBack = findViewById(R.id.back_img)
         btnSend.setOnClickListener {
             if(edtMessage.text.toString().isEmpty()) return@setOnClickListener
             LiveChatFactory.sendMessage(LCMessageSend(edtMessage.text.toString()))
+            adapter.setIsScripting(false)
             edtMessage.text.clear()
+        }
+
+        btnBack.setOnClickListener {
+            finish()
         }
 
         btnAttach.setOnClickListener {

@@ -4,6 +4,7 @@ import android.content.Context
 import com.mitek.build.live.chat.sdk.listener.publisher.LiveChatListener
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.internal.LCMessageReceiveSource
+import com.mitek.build.live.chat.sdk.model.internal.LCScript
 import com.mitek.build.live.chat.sdk.model.internal.LCSupportType
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
@@ -31,6 +32,10 @@ object LiveChatFactory {
 
     fun removeEventListener(listener: LiveChatListener){
         LiveChatSDK.removeEventListener(listener)
+    }
+
+    fun getScripts(): ArrayList<LCScript>{
+        return LiveChatSDK.getScripts()
     }
 
     fun addEventListener(listener: LiveChatListener){

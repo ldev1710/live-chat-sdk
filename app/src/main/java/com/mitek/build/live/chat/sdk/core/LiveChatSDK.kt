@@ -18,7 +18,9 @@ import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.chat.LCSender
+import com.mitek.build.live.chat.sdk.model.internal.LCButtonAction
 import com.mitek.build.live.chat.sdk.model.internal.LCMessageReceiveSource
+import com.mitek.build.live.chat.sdk.model.internal.LCScript
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
 import com.mitek.build.live.chat.sdk.util.LCLog
@@ -49,6 +51,7 @@ object LiveChatSDK {
     private var isInitialized = false
     private var isAvailable = false
     private var listeners: ArrayList<LiveChatListener>? = null
+    private lateinit var lcScripts: ArrayList<LCScript>
     private var context: Context? = null
     private var socket: Socket? = null
     private var socketClient: Socket? = null
@@ -62,9 +65,16 @@ object LiveChatSDK {
         return lcSession!!
     }
 
-    private fun isValid(): Boolean {
+    private fun isReady(): Boolean {
         if (!(isInitialized && isAvailable)) {
             LCLog.logE("LiveChatSDK is not ready")
+            return false
+        }
+        return true
+    }
+
+    private fun isValid(): Boolean {
+        if(!isReady()){
             return false
         }
         if(lcUser == null || lcSession == null){
@@ -75,9 +85,11 @@ object LiveChatSDK {
     }
 
     fun setUserSession(lcSession: LCSession, lcUser: LCUser){
-        this.lcUser = lcUser
-        this.lcSession = lcSession
-        socketClient!!.emit(SocketConstant.JOIN_SESSION,lcSession.sessionId)
+        if(isReady()){
+            this.lcUser = lcUser
+            this.lcSession = lcSession
+            socketClient!!.emit(SocketConstant.JOIN_SESSION,lcSession.sessionId)
+        }
     }
 
     fun sendFileMessage(paths: ArrayList<String>,contentTye: String){
@@ -222,6 +234,11 @@ object LiveChatSDK {
         return Base64.encode(rawString.toByteArray())
     }
 
+    fun getScripts() : ArrayList<LCScript> {
+        assert(isReady())
+        return lcScripts
+    }
+
     fun initializeSession(user: LCUser,tokenFCM: String, supportType: LCSupportType) {
         if (isInitialized && isAvailable) {
             try {
@@ -284,7 +301,7 @@ object LiveChatSDK {
 
     fun getMessages(offset:Int,limit:Int) {
         if (isValid()) {
-            var jsonObject = JSONObject()
+            val jsonObject = JSONObject()
             jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
             jsonObject.put(base64("session_id"), lcSession!!.sessionId)
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
@@ -320,7 +337,28 @@ object LiveChatSDK {
                     return@on
                 }
                 val dataResp = jsonObject.getJSONObject("data")
+                val rawScripts = dataResp.getJSONArray("script")
+                lcScripts = ArrayList()
+                for (i in 0..< rawScripts.length()){
+                    val rawScript = rawScripts.getJSONObject(i)
+                    val rawButtonActions = rawScript.optJSONArray("button_action") ?: continue
+                    val buttonActions = ArrayList<LCButtonAction>()
+                    for (j in 0 ..< rawButtonActions.length()){
+                        val rawButtonAction = rawButtonActions.getJSONObject(j)
+                        buttonActions.add(LCButtonAction(
+                            rawButtonAction.getString("button"),
+                            rawButtonAction.getString("next"),
+                        ))
+                    }
+                    lcScripts.add(LCScript(
+                        rawScript.getString("id"),
+                        rawScript.getString("name"),
+                        rawScript.getString("next_action"),
+                        buttonActions,
+                    ))
+                }
                 SocketConstant.CLIENT_URL_SOCKET = dataResp.getString("domain_socket")
+                LCLog.logI("RES-AUTH: ${SocketConstant.CLIENT_URL_SOCKET}")
                 LiveChatAPI.setUrl(SocketConstant.CLIENT_URL_SOCKET)
                 accessToken = dataResp.getString("access_token")
                 val supportTypesRaw = dataResp.getJSONArray("support_type")
@@ -351,6 +389,7 @@ object LiveChatSDK {
                         observingAuthorize(true, "Authorization successful", currLCAccount)
                     }
                     socketClient!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
+                        LCLog.logI("RECEIVE_MESSAGE RAW: ${data[0]}")
                         val jsonObject = data[0] as JSONObject
                         val messageRaw = jsonObject.getJSONObject("data")
                         val fromRaw = messageRaw.getJSONObject("sender")
