@@ -22,24 +22,24 @@ public class ScriptAdapter extends RecyclerView.Adapter<ScriptAdapter.ViewHolder
     ArrayList<LCButtonAction> arrayList;
     OnClickObserve onClickObserve;
 
-    public ScriptAdapter(Context context, ArrayList<LCButtonAction> arrayList, OnClickObserve onClickObserve) {
+    public ScriptAdapter(Context context, ArrayList<LCButtonAction> arrayList,OnClickObserve onClickObserve) {
         this.context = context;
         this.arrayList = arrayList;
         this.onClickObserve = onClickObserve;
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ScriptAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_script, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ScriptAdapter.ViewHolder holder, int position) {
         LCButtonAction buttonAction = arrayList.get(position);
         holder.title.setText(buttonAction.getTextSend());
         holder.title.setOnClickListener(view -> {
-            LiveChatFactory.INSTANCE.sendMessage(new LCMessageSend(buttonAction.getTextSend()));
+            LiveChatFactory.INSTANCE.sendScriptMessage(new LCMessageSend(buttonAction.getTextSend()),buttonAction.getNextId());
             onClickObserve.onClick(buttonAction);
         });
     }

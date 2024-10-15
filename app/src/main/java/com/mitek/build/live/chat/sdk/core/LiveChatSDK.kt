@@ -267,11 +267,12 @@ object LiveChatSDK {
         listeners!!.add(listener)
     }
 
-    fun sendMessage(lcMessage: LCMessageSend) {
+    fun sendMessage(lcMessage: LCMessageSend,nextScriptId: String?) {
         if (isValid()) {
             val jsonObject = JSONObject()
             val mappingId = UUID.randomUUID().toString()
             jsonObject.put(base64("body"),lcMessage.content)
+            jsonObject.put(base64("id_next"),nextScriptId)
             jsonObject.put(base64("mapping_id"),mappingId)
             jsonObject.put(base64("add_message_archive"),"")
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)

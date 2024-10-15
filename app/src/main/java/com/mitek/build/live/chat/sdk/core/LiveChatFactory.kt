@@ -43,7 +43,11 @@ object LiveChatFactory {
     }
 
     fun sendMessage(message: LCMessageSend){
-        LiveChatSDK.sendMessage(message)
+        LiveChatSDK.sendMessage(message,null)
+    }
+
+    fun sendScriptMessage(message: LCMessageSend,nextScriptId: String){
+        LiveChatSDK.sendMessage(message,nextScriptId)
     }
 
     fun getMessages(offset: Int = 0,limit: Int = 5) {
