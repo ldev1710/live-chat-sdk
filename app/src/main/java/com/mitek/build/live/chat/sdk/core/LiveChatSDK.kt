@@ -390,7 +390,6 @@ object LiveChatSDK {
                         observingAuthorize(true, "Authorization successful", currLCAccount)
                     }
                     socketClient!!.on(SocketConstant.RECEIVE_MESSAGE) { data ->
-                        LCLog.logI("RECEIVE_MESSAGE RAW: ${data[0]}")
                         val jsonObject = data[0] as JSONObject
                         val messageRaw = jsonObject.getJSONObject("data")
                         val fromRaw = messageRaw.getJSONObject("sender")
