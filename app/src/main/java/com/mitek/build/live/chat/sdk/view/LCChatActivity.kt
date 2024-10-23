@@ -153,9 +153,33 @@ class LCChatActivity : AppCompatActivity() {
         btnAttach = findViewById(R.id.btnAttach)
         btnBack = findViewById(R.id.back_img)
         btnSend.setOnClickListener {
-            if(edtMessage.text.toString().isEmpty()) return@setOnClickListener
-            LiveChatFactory.sendMessage(LCMessageSend(edtMessage.text.toString()))
-            adapter.setIsScripting(false)
+            if (edtMessage.text.toString().isEmpty()) return@setOnClickListener
+            if (!adapter.isWaiting()) adapter.setIsScripting(false)
+            if (adapter.getIndexWait() < adapter.getCurrScript().answers.size) {
+                val answer = adapter.getCurrScript().answers[adapter.getIndexWait()]
+                if (answer.type == "assign" || answer.type == "assign_team") {
+                    adapter.setIsScripting(false)
+                    adapter.setIndexWait(0)
+                    adapter.setIsWaiting(false)
+                    LiveChatFactory.sendMessage(
+                        LCMessageSend(edtMessage.text.toString()),
+                        if (adapter.isWaiting()) adapter.getIndexWait() else null,
+                        if (adapter.isWaiting()) adapter.getCurrScript().id else null,
+                    )
+                    edtMessage.text.clear()
+                }
+                adapter.setIndexWait(adapter.getIndexWait() + 1)
+            } else {
+                adapter.setIsWaiting(false)
+            }
+            LiveChatFactory.sendMessage(
+                LCMessageSend(edtMessage.text.toString()),
+                if (adapter.isWaiting()) adapter.getIndexWait() else null,
+                if (adapter.isWaiting()) adapter.getCurrScript().id else null,
+            )
+            if(adapter.getIndexWait() == adapter.getCurrScript().answers.size){
+                adapter.setIsWaiting(false)
+            }
             edtMessage.text.clear()
         }
 

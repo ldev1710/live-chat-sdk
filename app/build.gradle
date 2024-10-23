@@ -41,7 +41,7 @@ android {
         jvmTarget = '17'
     }
 }
-//apply from: "$rootDir/gradle-mvn-push.gradle"
+
 dependencies {
 
     implementation 'androidx.appcompat:appcompat:1.6.1'

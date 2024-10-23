@@ -42,12 +42,12 @@ object LiveChatFactory {
         LiveChatSDK.addEventListener(listener)
     }
 
-    fun sendMessage(message: LCMessageSend){
-        LiveChatSDK.sendMessage(message,null)
+    fun sendMessage(message: LCMessageSend,position: Int? = null, currScriptId: String? = null){
+        LiveChatSDK.sendMessage(message,null, position, currScriptId)
     }
 
     fun sendScriptMessage(message: LCMessageSend,nextScriptId: String){
-        LiveChatSDK.sendMessage(message,nextScriptId)
+        LiveChatSDK.sendMessage(message,nextScriptId,null,null)
     }
 
     fun getMessages(offset: Int = 0,limit: Int = 5) {

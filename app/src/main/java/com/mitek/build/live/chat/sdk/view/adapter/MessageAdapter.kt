@@ -26,6 +26,7 @@ import com.mitek.build.live.chat.sdk.model.chat.LCStatusMessage
 import com.mitek.build.live.chat.sdk.model.internal.LCButtonAction
 import com.mitek.build.live.chat.sdk.model.internal.LCScript
 import com.mitek.build.live.chat.sdk.model.user.LCSession
+import com.mitek.build.live.chat.sdk.util.LCLog
 
 
 class MessageAdapter(
@@ -34,19 +35,45 @@ class MessageAdapter(
     private val lcSession: LCSession,
     private var scripts: ArrayList<LCScript>
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-    private lateinit var currScriptId: String
+    private var isWaiting = false
+    private lateinit var currScript: LCScript
     private var isScriptingMessage: Boolean
+    private var indexWait = 0
 
     init {
         isScriptingMessage = scripts.isNotEmpty()
         if(isScriptingMessage){
-            currScriptId = scripts.first().id
+            currScript = scripts.first()
         }
+        LCLog.logI("scripts: $scripts")
     }
 
+    fun getIndexWait() : Int {
+        return this.indexWait
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     fun setIsScripting(isScripting: Boolean){
         this.isScriptingMessage = isScripting
+        notifyDataSetChanged()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun setIsWaiting(isWaiting: Boolean){
+        this.isWaiting = isWaiting
+        notifyDataSetChanged()
+    }
+
+    fun isWaiting() : Boolean {
+        return isWaiting
+    }
+
+    fun getCurrScript() : LCScript {
+        return currScript
+    }
+
+    fun setIndexWait(newValue: Int) {
+        indexWait = newValue
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -137,7 +164,6 @@ class MessageAdapter(
             "image" -> {
                 val attachments = lcMessageEntity.lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
                 val urls = ArrayList<String>()
-
                 attachments.forEach {
                     urls.add(it.url)
                 }
@@ -205,21 +231,32 @@ class MessageAdapter(
         layoutManager.flexDirection = FlexDirection.ROW
         layoutManager.justifyContent = JustifyContent.FLEX_START
         holder.scriptView.layoutManager = layoutManager
-        val lcScript = scripts.find { it.id == currScriptId }
-        if(lcScript == null || lcScript.nextAction == "end"){
+        val nextScript = scripts.find { it.id == currScript.id }
+        if(nextScript == null){
             setIsScripting(false)
             return
         }
-        val adapter = ScriptAdapter(mContext, lcScript.buttonAction, object : OnClickObserve {
+        val adapter = ScriptAdapter(mContext, nextScript.buttonAction, object : OnClickObserve {
             override fun onClick(lcButtonAction: LCButtonAction) {
-                currScriptId = lcButtonAction.nextId
+                LCLog.logI("nextId: ${lcButtonAction.nextId}")
+                val nextScript = scripts.find { it.id == lcButtonAction.nextId }
+                LCLog.logI("nextScript: $nextScript")
+                if(nextScript == null){
+                    setIsScripting(false)
+                    return
+                }
+                indexWait = 0
+                currScript = nextScript
+                setIsWaiting(currScript.answers.find { it.type == "customer" } != null)
+                LCLog.logI("isWait: $isWaiting")
             }
         })
         holder.scriptView.setAdapter(adapter)
+
     }
 
     override fun getItemCount(): Int {
-        return mList.size + if(isScriptingMessage) 1 else 0
+        return mList.size + if(isScriptingMessage && !isWaiting) 1 else 0
     }
 
     override fun getItemId(position: Int): Long {
@@ -227,7 +264,7 @@ class MessageAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if(position == itemCount-1 && isScriptingMessage){
+        return if(position == itemCount-1 && isScriptingMessage && !isWaiting){
             VIEW_TYPE_SCRIPTING
         } else if(mList[position]==null) {
             VIEW_TYPE_FETCHING
