@@ -183,6 +183,7 @@ class LCChatActivity : AppCompatActivity() {
                         if (adapter.isWaiting()) adapter.getCurrScript().id else null,
                     )
                     edtMessage.text.clear()
+                    return@setOnClickListener
                 }
                 adapter.setIndexWait(adapter.getIndexWait() + 1)
             } else {
