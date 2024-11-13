@@ -160,7 +160,7 @@ object LiveChatSDK {
             paths.map { it ->
                 val fileName = it.split('/').last()
                 val extension = fileName.split('.').last()
-                lcAttachments.add(LCAttachment(fileName,extension,""))
+                lcAttachments.add(LCAttachment(fileName,extension,it))
             }
             val message = LCMessage(
                 -1,
@@ -229,6 +229,13 @@ object LiveChatSDK {
         }
     }
 
+    @JvmStatic
+    fun observingRestartScripting(buttonActions: ArrayList<LCButtonAction>) {
+        if (listeners == null) return
+        for (listener in listeners!!) {
+            listener.onRestartScripting(buttonActions)
+        }
+    }
 
     @OptIn(ExperimentalEncodingApi::class)
     private fun base64(rawString: String): String {
@@ -456,6 +463,23 @@ object LiveChatSDK {
                         val sessionId: String = jsonData.getString("session_id")
                         val visitorJid: String = jsonData.getString("visitor_jid")
                         observingInitialSession(success, LCSession(sessionId,visitorJid))
+                    }
+                    socketClient!!.on(SocketConstant.RESTART_SCRIPTING) {
+                            data ->
+                        LCLog.logI("RESTART_SCRIPTING: ${data[0]}")
+                        val rawScript = data[0] as JSONObject
+                        val rawButtonActions = rawScript.optJSONArray("button_action")
+                        val buttonActions = ArrayList<LCButtonAction>()
+                        if(rawButtonActions != null){
+                            for (j in 0 ..< rawButtonActions.length()){
+                                val rawButtonAction = rawButtonActions.getJSONObject(j)
+                                buttonActions.add(LCButtonAction(
+                                    rawButtonAction.getString("button"),
+                                    rawButtonAction.getString("next"),
+                                ))
+                            }
+                            observingRestartScripting(buttonActions)
+                        }
                     }
                     socketClient!!.connect()
                 } catch (e: Exception) {

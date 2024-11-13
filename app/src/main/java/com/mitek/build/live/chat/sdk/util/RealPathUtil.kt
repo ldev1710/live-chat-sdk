@@ -138,21 +138,21 @@ object RealPathUtil {
         context: Context, uri: Uri?, selection: String?,
         selectionArgs: Array<String>?
     ): String? {
+        uri ?: return null
         var cursor: Cursor? = null
         val column = "_data"
-        val projection = arrayOf(
-            column
-        )
+        val projection = arrayOf(column)
 
         try {
             cursor = context.contentResolver.query(
-                uri!!, projection, selection, selectionArgs,
-                null
+                uri, projection, selection, selectionArgs, null
             )
             if (cursor != null && cursor.moveToFirst()) {
                 val index = cursor.getColumnIndexOrThrow(column)
                 return cursor.getString(index)
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         } finally {
             cursor?.close()
         }

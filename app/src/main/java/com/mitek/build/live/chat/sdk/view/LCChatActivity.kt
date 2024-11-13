@@ -1,12 +1,20 @@
 package com.mitek.build.live.chat.sdk.view
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
+import android.provider.Settings
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.mitek.build.live.chat.sdk.R
@@ -18,6 +26,7 @@ import com.mitek.build.live.chat.sdk.model.chat.LCMessageEntity
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.chat.LCStatusMessage
+import com.mitek.build.live.chat.sdk.model.internal.LCButtonAction
 import com.mitek.build.live.chat.sdk.util.LCLog.logI
 import com.mitek.build.live.chat.sdk.util.RealPathUtil
 import com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter
@@ -95,6 +104,13 @@ class LCChatActivity : AppCompatActivity() {
                             adapter.notifyItemRangeChanged(0,messages.size)
                         }
                     }
+                }
+            }
+
+            override fun onRestartScripting(buttonActions: ArrayList<LCButtonAction>) {
+                super.onRestartScripting(buttonActions)
+                runOnUiThread {
+                    adapter.restartScripting(buttonActions)
                 }
             }
 
@@ -188,7 +204,7 @@ class LCChatActivity : AppCompatActivity() {
         }
 
         btnAttach.setOnClickListener {
-            val intent = Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
             intent.setType("image/*")
@@ -196,23 +212,33 @@ class LCChatActivity : AppCompatActivity() {
         }
         messagesGlo = ArrayList()
     }
+
     private lateinit var paths: ArrayList<String>
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK) {
-            paths = ArrayList()
-            if (data!!.clipData != null) {
-                val sizeChooser = data.clipData!!.itemCount
-                for (i in 0 until sizeChooser) {
-                    val path: String = RealPathUtil.getRealPath(this@LCChatActivity, data.clipData!!.getItemAt(i).uri)!!
-                    paths.add(path)
+        if(requestCode == 0){
+            if (resultCode == RESULT_OK) {
+                if(data != null){
+                    paths = ArrayList()
+                    if (data.clipData != null) {
+                        logI("data!!.clipData ${data.clipData}")
+                        val sizeChooser = data.clipData!!.itemCount
+                        for (i in 0 until sizeChooser) {
+                            val path: String = RealPathUtil.getRealPath(this@LCChatActivity, data.clipData!!.getItemAt(i).uri)!!
+                            paths.add(path)
+                        }
+                    } else if (data.data != null) {
+                        logI("data.data ${data.data}")
+                        val path: String = RealPathUtil.getRealPath(this@LCChatActivity, data.data!!)!!
+                        paths.add(path)
+                    }
+                    logI(paths.toString())
+                    LiveChatFactory.sendFileMessage(paths,"image")
                 }
-            } else if (data.data != null) {
-                val path: String = RealPathUtil.getRealPath(this@LCChatActivity, data.data!!)!!
-                paths.add(path)
+
             }
-            logI(paths.toString())
-            LiveChatFactory.sendFileMessage(paths,"image")
         }
+
     }
 }

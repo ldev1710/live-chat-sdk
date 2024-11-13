@@ -39,13 +39,13 @@ class MessageAdapter(
     private lateinit var currScript: LCScript
     private var isScriptingMessage: Boolean
     private var indexWait = 0
+    private var buttonScriptRestarted: ArrayList<LCButtonAction>? = null
 
     init {
         isScriptingMessage = scripts.isNotEmpty()
         if(isScriptingMessage){
             currScript = scripts.first()
         }
-        LCLog.logI("scripts: $scripts")
     }
 
     fun getIndexWait() : Int {
@@ -55,6 +55,14 @@ class MessageAdapter(
     @SuppressLint("NotifyDataSetChanged")
     fun setIsScripting(isScripting: Boolean){
         this.isScriptingMessage = isScripting
+        if(!isScriptingMessage) buttonScriptRestarted = null
+        notifyDataSetChanged()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun restartScripting(buttonActions: ArrayList<LCButtonAction>){
+        buttonScriptRestarted = buttonActions
+        isScriptingMessage = true
         notifyDataSetChanged()
     }
 
@@ -167,14 +175,14 @@ class MessageAdapter(
                 attachments.forEach {
                     urls.add(it.url)
                 }
-                val adapter = ImageListAdapter(urls)
+                val adapter = ImageListAdapter(mContext,urls)
                 holder.rvImg.adapter = adapter
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
                 holder.rvImg.visibility = View.VISIBLE
             }
             "file" -> {
                 val attachments = lcMessageEntity.lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
-                val adapter = FileListAdapter(attachments)
+                val adapter = FileListAdapter(mContext,attachments)
                 holder.rvImg.adapter = adapter
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
                 holder.rvImg.visibility = View.VISIBLE
@@ -201,14 +209,14 @@ class MessageAdapter(
                 attachments.forEach {
                     urls.add(it.url)
                 }
-                val adapter = ImageListAdapter(urls)
+                val adapter = ImageListAdapter(mContext,urls)
                 holder.rvImg.adapter = adapter
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
                 holder.rvImg.visibility = View.VISIBLE
             }
             "file" -> {
                 var attachments = lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
-                val adapter = FileListAdapter(attachments)
+                val adapter = FileListAdapter(mContext,attachments)
                 holder.rvImg.adapter = adapter
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
                 holder.rvImg.visibility = View.VISIBLE
@@ -232,25 +240,27 @@ class MessageAdapter(
         layoutManager.justifyContent = JustifyContent.FLEX_START
         holder.scriptView.layoutManager = layoutManager
         val nextScript = scripts.find { it.id == currScript.id }
-        if(nextScript == null){
-            setIsScripting(false)
-            return
-        }
-        val adapter = ScriptAdapter(mContext, nextScript.buttonAction, object : OnClickObserve {
-            override fun onClick(lcButtonAction: LCButtonAction) {
-                LCLog.logI("nextId: ${lcButtonAction.nextId}")
-                val nextScript = scripts.find { it.id == lcButtonAction.nextId }
-                LCLog.logI("nextScript: $nextScript")
-                if(nextScript == null){
-                    setIsScripting(false)
-                    return
-                }
-                indexWait = 0
-                currScript = nextScript
-                setIsWaiting(currScript.answers.find { it.type == "customer" } != null)
-                LCLog.logI("isWait: $isWaiting")
+        if(buttonScriptRestarted == null){
+            if(nextScript == null){
+                setIsScripting(false)
+                return
             }
-        })
+        }
+        val adapter = ScriptAdapter(
+            mContext,
+            if(buttonScriptRestarted != null) buttonScriptRestarted else nextScript!!.buttonAction, object : OnClickObserve {
+                override fun onClick(lcButtonAction: LCButtonAction) {
+                    val nextScript = scripts.find { it.id == lcButtonAction.nextId }
+                    buttonScriptRestarted = null
+                    if(nextScript == null){
+                        setIsScripting(false)
+                        return
+                    }
+                    indexWait = 0
+                    currScript = nextScript
+                    setIsWaiting(currScript.answers.find { it.type == "customer" } != null)
+                }
+            })
         holder.scriptView.setAdapter(adapter)
 
     }

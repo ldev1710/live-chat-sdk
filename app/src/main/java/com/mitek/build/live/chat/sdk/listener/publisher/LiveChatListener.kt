@@ -5,6 +5,7 @@ import com.mitek.build.live.chat.sdk.model.internal.LCAccount
 import com.mitek.build.live.chat.sdk.listener.observe.LiveChatObserve
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
+import com.mitek.build.live.chat.sdk.model.internal.LCButtonAction
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 
 open class LiveChatListener : LiveChatObserve {
@@ -24,5 +25,8 @@ open class LiveChatListener : LiveChatObserve {
     }
 
     override fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?,errorMessage: String?,mappingId: String?) {
+    }
+
+    override fun onRestartScripting(buttonActions: ArrayList<LCButtonAction>) {
     }
 }
