@@ -53,6 +53,13 @@ afterEvaluate{
                 version = '1.0.0' // Phiên bản hiện tại
             }
         }
+        repositories {
+            maven {
+                name = "GitLab"
+                url = uri("https://gitlab.com/api/v4/projects/286/packages/maven")
+                // Omit authentication if your project is public
+            }
+        }
     }
 }
 
