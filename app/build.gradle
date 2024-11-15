@@ -1,8 +1,10 @@
 
 plugins {
-    id 'com.android.library'
     id 'org.jetbrains.kotlin.android' version '2.0.0'
 }
+
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 android {
     compileSdk 34
     namespace "com.mitek.build.live.chat.sdk"
@@ -41,6 +43,32 @@ android {
         jvmTarget = '17'
     }
 }
+afterEvaluate{
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.gitlab.mitek' // Thay bằng tên gói của bạn
+                artifactId = 'live-chat-sdk' // Tên thư viện
+                version = '1.0.0' // Phiên bản hiện tại
+            }
+        }
+    }
+}
+
+//repositories {
+//    maven {
+//        url = uri("https://gitlab.mitek.vn/api/v4/projects/243/packages/maven")
+//        credentials(HttpHeaderCredentials) {
+//            name = "jitpack-access"
+//            value = "glpat-R4pVehMCAhQWoVw9ay_Y"
+//        }
+//        authentication {
+//            header(HttpHeaderAuthentication)
+//        }
+//    }
+//}
+
 
 dependencies {
 
