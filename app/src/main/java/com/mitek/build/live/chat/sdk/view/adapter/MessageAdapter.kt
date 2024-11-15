@@ -164,7 +164,7 @@ class MessageAdapter(
                 holder.tvStatusSend.visibility = View.VISIBLE
             }
         } else {
-            holder.tvStatusSend.text = "Không thể gửi"
+            holder.tvStatusSend.text = if(lcMessageEntity.errorMessage != null) lcMessageEntity.errorMessage else "Không thể gửi"
             holder.tvStatusSend.setTextColor(Color.RED)
             holder.tvStatusSend.visibility = View.VISIBLE
         }

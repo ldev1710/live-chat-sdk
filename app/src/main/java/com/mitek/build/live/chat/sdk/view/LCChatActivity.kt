@@ -59,7 +59,7 @@ class LCChatActivity : AppCompatActivity() {
                 runOnUiThread {
                     if(isInit){
                         messages.reversed().map {
-                            messagesGlo.add(LCMessageEntity(lcMessage = it, LCStatusMessage.sent))
+                            messagesGlo.add(LCMessageEntity(lcMessage = it, LCStatusMessage.sent,null))
                         }
                         adapter = MessageAdapter(
                             this@LCChatActivity,
@@ -98,7 +98,7 @@ class LCChatActivity : AppCompatActivity() {
                             messagesGlo.removeAt(0)
                             val tmp = ArrayList<LCMessageEntity>()
                             messages.reversed().map {
-                                tmp.add(LCMessageEntity(lcMessage = it, LCStatusMessage.sent))
+                                tmp.add(LCMessageEntity(lcMessage = it, LCStatusMessage.sent,null))
                             }
                             messagesGlo.addAll(0,tmp)
                             adapter.notifyItemRangeChanged(0,messages.size)
@@ -130,8 +130,7 @@ class LCChatActivity : AppCompatActivity() {
                     }
                     LCSendMessageEnum.SENDING -> {
                         messagesGlo.add(
-                            LCMessageEntity(lcMessage = message!!,
-                                LCStatusMessage.sending)
+                            LCMessageEntity(lcMessage = message!!, LCStatusMessage.sending,errorMessage)
                         )
                         runOnUiThread {
                             adapter.notifyDataSetChanged()
@@ -139,8 +138,9 @@ class LCChatActivity : AppCompatActivity() {
                         }
                     }
                     else -> {
-                        val indexFound = messagesGlo.indexOfFirst { it != null && it.lcMessage.mappingId == message!!.mappingId }
+                        val indexFound = messagesGlo.indexOfFirst { it != null && it.lcMessage.mappingId == mappingId }
                         messagesGlo[indexFound]!!.status = LCStatusMessage.failed
+                        messagesGlo[indexFound]!!.errorMessage = errorMessage
                         runOnUiThread {
                             adapter.notifyItemRangeChanged(indexFound,1)
                         }
@@ -152,7 +152,7 @@ class LCChatActivity : AppCompatActivity() {
             override fun onReceiveMessage(lcMessage: LCMessage) {
                 super.onReceiveMessage(lcMessage)
                 logI("onReceiveMessage: $lcMessage")
-                messagesGlo.add(LCMessageEntity(lcMessage=lcMessage, LCStatusMessage.sent))
+                messagesGlo.add(LCMessageEntity(lcMessage=lcMessage, LCStatusMessage.sent,null))
                 runOnUiThread {
                     adapter.notifyDataSetChanged()
                     rvChat.smoothScrollToPosition(adapter.itemCount)
