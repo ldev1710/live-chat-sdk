@@ -6,7 +6,7 @@ plugins {
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
 android {
-    compileSdk 34
+    compileSdk 35
     namespace "com.mitek.build.live.chat.sdk"
     buildFeatures {
         buildConfig true
