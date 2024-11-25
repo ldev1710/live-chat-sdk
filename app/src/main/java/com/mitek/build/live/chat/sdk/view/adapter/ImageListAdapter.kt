@@ -2,6 +2,7 @@ package com.mitek.build.live.chat.sdk.view.adapter
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -38,6 +39,8 @@ class ImageListAdapter(private val context:Context, private val urls: ArrayList<
                 .load(file)
                 .into(holder.imageView)
         }
+        holder.imageView.scaleType = ImageView.ScaleType.FIT_CENTER
+        holder.imageView.setBackgroundColor(Color.WHITE)
     }
 
     override fun getItemCount(): Int {
