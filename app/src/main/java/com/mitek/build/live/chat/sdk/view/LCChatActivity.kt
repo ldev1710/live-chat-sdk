@@ -223,14 +223,12 @@ class LCChatActivity : AppCompatActivity() {
                 if(data != null){
                     paths = ArrayList()
                     if (data.clipData != null) {
-                        logI("data!!.clipData ${data.clipData}")
                         val sizeChooser = data.clipData!!.itemCount
                         for (i in 0 until sizeChooser) {
                             val path: String = RealPathUtil.getRealPath(this@LCChatActivity, data.clipData!!.getItemAt(i).uri)!!
                             paths.add(path)
                         }
                     } else if (data.data != null) {
-                        logI("data.data ${data.data}")
                         val path: String = RealPathUtil.getRealPath(this@LCChatActivity, data.data!!)!!
                         paths.add(path)
                     }
