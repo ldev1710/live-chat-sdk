@@ -8,11 +8,11 @@ import org.json.JSONObject
 object LCParseUtils {
     fun parseLCContentFrom(rawContent: JSONObject,isPush: Boolean = false) : LCContent{
         val contentType = rawContent.getString("content-type")
-        var lcContent = LCContent(
+        val lcContent = LCContent(
             contentType,
             ""
         )
-        if(contentType == "file" || contentType == "image"){
+        if(contentType == "file" || contentType == "image" || contentType == "video" || contentType == "audio"){
             val lcAttachments = ArrayList<LCAttachment>()
             val rawContentMessages: JSONArray = if (isPush) {
                 JSONArray(rawContent.getString("content-message"))

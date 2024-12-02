@@ -321,7 +321,7 @@ object LiveChatSDK {
             jsonObject.put(base64("offset"), offset)
             jsonObject.put(base64("access_token"), accessToken)
             jsonObject.put(base64("limit"), limit)
-            socket!!.emit(SocketConstant.GET_MESSAGES,jsonObject)
+            socketClient!!.emit(SocketConstant.GET_MESSAGES,jsonObject)
         }
     }
 
@@ -481,34 +481,34 @@ object LiveChatSDK {
                             observingRestartScripting(buttonActions)
                         }
                     }
+                    socketClient!!.on(SocketConstant.RESULT_GET_MESSAGES) {
+                            data ->
+                        val jsonObject = data[0] as JSONObject
+                        val messagesRaw = jsonObject.getJSONArray("data")
+                        val messages = ArrayList<LCMessage>()
+                        for (i in 0..<messagesRaw.length()){
+                            val jsonMessage = messagesRaw.getJSONObject(i)
+                            val jsonSender = jsonMessage.getJSONObject("from")
+                            val rawContent = jsonMessage.getJSONObject("content")
+                            messages.add(
+                                LCMessage(
+                                    jsonMessage.getInt("id"),
+                                    null,
+                                    LCParseUtils.parseLCContentFrom(rawContent),
+                                    LCSender(
+                                        jsonSender.getString("id"),
+                                        jsonSender.getString("name")
+                                    ),
+                                    jsonMessage.getString("created_at"),
+                                )
+                            )
+                        }
+                        observingGotMessages(messages)
+                    }
                     socketClient!!.connect()
                 } catch (e: Exception) {
                     LCLog.logE(e.toString())
                 }
-            }
-            socket!!.on(SocketConstant.RESULT_GET_MESSAGES) {
-                    data ->
-                val jsonObject = data[0] as JSONObject
-                val messagesRaw = jsonObject.getJSONArray("data")
-                val messages = ArrayList<LCMessage>()
-                for (i in 0..<messagesRaw.length()){
-                    val jsonMessage = messagesRaw.getJSONObject(i)
-                    val jsonSender = jsonMessage.getJSONObject("from")
-                    val rawContent = jsonMessage.getJSONObject("content")
-                    messages.add(
-                        LCMessage(
-                            jsonMessage.getInt("id"),
-                            null,
-                            LCParseUtils.parseLCContentFrom(rawContent),
-                            LCSender(
-                                jsonSender.getString("id"),
-                                jsonSender.getString("name")
-                            ),
-                            jsonMessage.getString("created_at"),
-                        )
-                    )
-                }
-                observingGotMessages(messages)
             }
             socket!!.connect()
         } catch (e: Exception) {
