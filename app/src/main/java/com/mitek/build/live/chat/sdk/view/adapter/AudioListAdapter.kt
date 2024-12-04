@@ -21,11 +21,12 @@ class AudioListAdapter(private val context: Context, private val urls: ArrayList
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        holder.runnable = Runnable { updateSeekBar(holder) }
         holder.mediaPlayer = MediaPlayer().apply {
             setDataSource(urls[position].url)
             prepareAsync()
             setOnPreparedListener {
-               holder.audioSeekBar.max = it.duration
+                holder.audioSeekBar.max = it.duration
                 updateSeekBar(holder)
             }
             setOnCompletionListener {
@@ -70,9 +71,10 @@ class AudioListAdapter(private val context: Context, private val urls: ArrayList
 
     private fun updateSeekBar(holder: ViewHolder) {
         holder.mediaPlayer?.let {
-            if (holder.isPlaying) {
-                holder.audioSeekBar.progress = it.currentPosition
-                holder.handler.postDelayed({ updateSeekBar(holder) }, 1000)
+            holder.audioSeekBar.progress = it.currentPosition
+            holder.handler.postDelayed(holder.runnable, 1000)
+            if(!holder.mediaPlayer!!.isPlaying){
+                holder.handler.removeCallbacks(holder.runnable)
             }
         }
     }
@@ -86,6 +88,7 @@ class AudioListAdapter(private val context: Context, private val urls: ArrayList
         var audioSeekBar: SeekBar = item.findViewById(R.id.audioSeekBar)
         var mediaPlayer: MediaPlayer? = null
         val handler = Handler()
+        lateinit var runnable: Runnable
         var isPlaying = false
     }
 }

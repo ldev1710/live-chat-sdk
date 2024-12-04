@@ -1,20 +1,13 @@
 package com.mitek.build.live.chat.sdk.view
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.provider.MediaStore
-import android.provider.Settings
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.mitek.build.live.chat.sdk.R
@@ -27,9 +20,10 @@ import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.chat.LCStatusMessage
 import com.mitek.build.live.chat.sdk.model.internal.LCButtonAction
+import com.mitek.build.live.chat.sdk.util.FileUtils
 import com.mitek.build.live.chat.sdk.util.LCLog.logI
-import com.mitek.build.live.chat.sdk.util.RealPathUtil
 import com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter
+import java.io.File
 
 class LCChatActivity : AppCompatActivity() {
 
@@ -207,8 +201,11 @@ class LCChatActivity : AppCompatActivity() {
         btnAttach.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.addCategory(Intent.CATEGORY_OPENABLE)
+            val uri = Uri.parse(Environment.getExternalStorageDirectory().path + File.separator)
+            intent.setDataAndType(uri, "*/*")
+            intent.setType("*/*")
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-            intent.setType("image/*")
+            intent.putExtra("multi-pick", true)
             startActivityForResult(intent, 0)
         }
         messagesGlo = ArrayList()
@@ -225,19 +222,20 @@ class LCChatActivity : AppCompatActivity() {
                     if (data.clipData != null) {
                         val sizeChooser = data.clipData!!.itemCount
                         for (i in 0 until sizeChooser) {
-                            val path: String = RealPathUtil.getRealPath(this@LCChatActivity, data.clipData!!.getItemAt(i).uri)!!
-                            paths.add(path)
+                            val uri = data.clipData!!.getItemAt(i).uri
+                            val path = FileUtils.openFileStream(this,uri)
+                            paths.add(path ?: "")
                         }
                     } else if (data.data != null) {
-                        val path: String = RealPathUtil.getRealPath(this@LCChatActivity, data.data!!)!!
-                        paths.add(path)
+                        val path: String? = FileUtils.openFileStream(this,data.data!!)
+                        paths.add(path ?: "")
                     }
                     logI(paths.toString())
-                    LiveChatFactory.sendFileMessage(paths,"image")
+                    LiveChatFactory.sendFileMessage(paths,"file")
                 }
 
             }
         }
-
     }
+
 }

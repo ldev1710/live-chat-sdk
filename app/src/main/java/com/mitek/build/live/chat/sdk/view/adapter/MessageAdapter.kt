@@ -1,5 +1,6 @@
 package com.mitek.build.live.chat.sdk.view.adapter
 
+import android.R.attr.numColumns
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -26,7 +27,6 @@ import com.mitek.build.live.chat.sdk.model.chat.LCStatusMessage
 import com.mitek.build.live.chat.sdk.model.internal.LCButtonAction
 import com.mitek.build.live.chat.sdk.model.internal.LCScript
 import com.mitek.build.live.chat.sdk.model.user.LCSession
-import com.mitek.build.live.chat.sdk.util.LCLog
 
 
 class MessageAdapter(
@@ -127,7 +127,7 @@ class MessageAdapter(
     private fun showPopupMenu(view: View, message: LCMessage) {
         val popupMenu = PopupMenu(mContext, view)
         popupMenu.menuInflater.inflate(R.menu.menu_context, popupMenu.menu)
-        val textCopy = if(message.content!!.contentType == "image" || message.content!!.contentMessage == "file"){
+        val textCopy = if(arrayListOf("image","file","audio","video").contains(message.content!!.contentType)){
             (message.content!!.contentMessage as ArrayList<LCAttachment>).first().url
         } else {
             message.content!!.contentMessage as String
@@ -177,12 +177,34 @@ class MessageAdapter(
                 }
                 val adapter = ImageListAdapter(mContext,urls)
                 holder.rvImg.adapter = adapter
+                val decoration = RecyclerViewMargin(12)
+                holder.rvImg.addItemDecoration(decoration)
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
                 holder.rvImg.visibility = View.VISIBLE
             }
             "file" -> {
                 val attachments = lcMessageEntity.lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
                 val adapter = FileListAdapter(mContext,attachments)
+                holder.rvImg.adapter = adapter
+                val decoration = RecyclerViewMargin(12)
+                holder.rvImg.addItemDecoration(decoration)
+                holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
+                holder.rvImg.visibility = View.VISIBLE
+            }
+            "video" -> {
+                var attachments = lcMessageEntity.lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
+                val adapter = VideoListAdapter(mContext,attachments)
+                holder.rvImg.adapter = adapter
+                val decoration = RecyclerViewMargin(12)
+                holder.rvImg.addItemDecoration(decoration)
+                holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
+                holder.rvImg.visibility = View.VISIBLE
+            }
+            "audio" -> {
+                var attachments = lcMessageEntity.lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
+                val adapter = AudioListAdapter(mContext,attachments)
+                val decoration = RecyclerViewMargin(12)
+                holder.rvImg.addItemDecoration(decoration)
                 holder.rvImg.adapter = adapter
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
                 holder.rvImg.visibility = View.VISIBLE
@@ -211,13 +233,35 @@ class MessageAdapter(
                 }
                 val adapter = ImageListAdapter(mContext,urls)
                 holder.rvImg.adapter = adapter
+                val decoration = RecyclerViewMargin(12)
+                holder.rvImg.addItemDecoration(decoration)
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
                 holder.rvImg.visibility = View.VISIBLE
             }
             "file" -> {
                 var attachments = lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
                 val adapter = FileListAdapter(mContext,attachments)
+                val decoration = RecyclerViewMargin(12)
+                holder.rvImg.addItemDecoration(decoration)
                 holder.rvImg.adapter = adapter
+                holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
+                holder.rvImg.visibility = View.VISIBLE
+            }
+            "video" -> {
+                var attachments = lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
+                val adapter = VideoListAdapter(mContext,attachments)
+                holder.rvImg.adapter = adapter
+                val decoration = RecyclerViewMargin(12)
+                holder.rvImg.addItemDecoration(decoration)
+                holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
+                holder.rvImg.visibility = View.VISIBLE
+            }
+            "audio" -> {
+                var attachments = lcMessage.content!!.contentMessage as ArrayList<LCAttachment>
+                val adapter = AudioListAdapter(mContext,attachments)
+                holder.rvImg.adapter = adapter
+                val decoration = RecyclerViewMargin(12)
+                holder.rvImg.addItemDecoration(decoration)
                 holder.rvImg.layoutManager = CustomLayoutManager(mContext,false)
                 holder.rvImg.visibility = View.VISIBLE
             }

@@ -5,7 +5,6 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <!-- VideoView để phát video -->
     <VideoView
         android:id="@+id/video_view"
         android:layout_width="200dp"
@@ -15,19 +14,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Lớp nền màu đen mờ -->
     <View
         android:id="@+id/overlay_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="200dp"
+        android:layout_height="300dp"
         android:background="#80000000"
-    android:visibility="gone"
-    app:layout_constraintBottom_toBottomOf="@id/video_view"
-    app:layout_constraintTop_toTopOf="@id/video_view"
-    app:layout_constraintStart_toStartOf="@id/video_view"
-    app:layout_constraintEnd_toEndOf="@id/video_view" />
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@id/video_view"
+        app:layout_constraintTop_toTopOf="@id/video_view"
+        app:layout_constraintStart_toStartOf="@id/video_view"
+        app:layout_constraintEnd_toEndOf="@id/video_view" />
 
-    <!-- Nút Play/Pause ở giữa VideoView -->
     <ImageButton
         android:id="@+id/btn_play_pause"
         android:layout_width="48dp"
@@ -40,17 +37,24 @@
         app:layout_constraintStart_toStartOf="@id/video_view"
         app:layout_constraintEnd_toEndOf="@id/video_view"/>
 
-    <!-- SeekBar nằm dưới cùng của VideoView -->
     <SeekBar
         android:id="@+id/seek_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
         android:thumbTint="@color/blue"
         android:visibility="gone"
         android:progressTint="@color/blue"
         app:layout_constraintBottom_toBottomOf="@id/video_view"
         app:layout_constraintStart_toStartOf="@id/video_view"
         app:layout_constraintEnd_toEndOf="@id/video_view"/>
+
+    <ProgressBar
+        android:id="@+id/prg_video"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminateTint="@color/blue"
+        app:layout_constraintBottom_toBottomOf="@+id/video_view"
+        app:layout_constraintEnd_toEndOf="@+id/video_view"
+        app:layout_constraintStart_toStartOf="@+id/video_view"
+        app:layout_constraintTop_toTopOf="@+id/video_view" />
 </androidx.constraintlayout.widget.ConstraintLayout>
