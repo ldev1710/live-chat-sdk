@@ -14,5 +14,4 @@ object SocketConstant {
     var INITIALIZE_SESSION = "addQueue_ChatBot"
     var JOIN_SESSION = "joinSession"
     var RESULT_INITIALIZE_SESSION = "responseAddQueue_ChatBot"
-    var RESTART_SCRIPTING = "RESTART_SCRIPTING"
 }

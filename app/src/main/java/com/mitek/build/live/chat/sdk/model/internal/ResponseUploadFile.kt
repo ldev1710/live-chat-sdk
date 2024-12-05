@@ -1,6 +1,5 @@
 package com.mitek.build.live.chat.sdk.model.internal
 
-import com.google.gson.annotations.SerializedName
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 
 data class ResponseUploadFile(

@@ -18,10 +18,6 @@ import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.chat.LCSender
-import com.mitek.build.live.chat.sdk.model.internal.LCAnswer
-import com.mitek.build.live.chat.sdk.model.internal.LCButtonAction
-import com.mitek.build.live.chat.sdk.model.internal.LCMessageReceiveSource
-import com.mitek.build.live.chat.sdk.model.internal.LCScript
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 import com.mitek.build.live.chat.sdk.model.user.LCUser
 import com.mitek.build.live.chat.sdk.util.LCLog
@@ -52,7 +48,6 @@ object LiveChatSDK {
     private var isInitialized = false
     private var isAvailable = false
     private var listeners: ArrayList<LiveChatListener>? = null
-    private lateinit var lcScripts: ArrayList<LCScript>
     private var context: Context? = null
     private var socket: Socket? = null
     private var socketClient: Socket? = null
@@ -229,23 +224,12 @@ object LiveChatSDK {
         }
     }
 
-    @JvmStatic
-    fun observingRestartScripting(buttonActions: ArrayList<LCButtonAction>) {
-        if (listeners == null) return
-        for (listener in listeners!!) {
-            listener.onRestartScripting(buttonActions)
-        }
-    }
 
     @OptIn(ExperimentalEncodingApi::class)
     private fun base64(rawString: String): String {
         return Base64.encode(rawString.toByteArray())
     }
 
-    fun getScripts() : ArrayList<LCScript> {
-        assert(isReady())
-        return lcScripts
-    }
 
     fun initializeSession(user: LCUser,tokenFCM: String, supportType: LCSupportType) {
         if (isInitialized && isAvailable) {
@@ -275,14 +259,11 @@ object LiveChatSDK {
         listeners!!.add(listener)
     }
 
-    fun sendMessage(lcMessage: LCMessageSend,nextScriptId: String?,position: Int?, currScriptId: String?) {
+    fun sendMessage(lcMessage: LCMessageSend) {
         if (isValid()) {
             val jsonObject = JSONObject()
             val mappingId = UUID.randomUUID().toString()
-            LCLog.logI("position: $position")
-            LCLog.logI("currScriptId: $currScriptId")
             jsonObject.put(base64("body"),lcMessage.content)
-            jsonObject.put(base64("id_next"),nextScriptId)
             jsonObject.put(base64("mapping_id"),mappingId)
             jsonObject.put(base64("add_message_archive"),"")
             jsonObject.put(base64("groupid"), currLCAccount!!.groupId)
@@ -295,8 +276,6 @@ object LiveChatSDK {
             jsonObject.put(base64("host_name"), currLCAccount!!.hostName)
             jsonObject.put(base64("visitor_jid"), lcSession!!.visitorJid)
             jsonObject.put(base64("is_file"), 0)
-            jsonObject.put(base64("position"), position)
-            jsonObject.put(base64("curr_script_id"), currScriptId)
             socketClient!!.emit(SocketConstant.SEND_MESSAGE, jsonObject)
             val currentTime = Date()
             val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -350,44 +329,6 @@ object LiveChatSDK {
                     return@on
                 }
                 val dataResp = jsonObject.getJSONObject("data")
-                val rawScripts = dataResp.getJSONArray("script")
-                lcScripts = ArrayList()
-                for (i in 0..< rawScripts.length()){
-                    val rawScript = rawScripts.getJSONObject(i)
-                    val buttonActions = ArrayList<LCButtonAction>()
-                    val answers = ArrayList<LCAnswer>()
-                    val rawButtonActions = rawScript.optJSONArray("button_action")
-                    val rawAnswers = rawScript.optJSONArray("answer")
-                    if(rawButtonActions != null){
-                        for (j in 0 ..< rawButtonActions.length()){
-                            val rawButtonAction = rawButtonActions.getJSONObject(j)
-                            buttonActions.add(LCButtonAction(
-                                rawButtonAction.getString("button"),
-                                rawButtonAction.getString("next"),
-                            ))
-                        }
-                    }
-                    if(rawAnswers != null){
-                        for (j in 0 ..< rawAnswers.length()){
-                            val rawAnswer = rawAnswers.getJSONObject(j)
-                            val type = rawAnswer.getString("type")
-                            if(type == "assign" || type == "assign_team" || type == "customer"){
-                                answers.add(
-                                    LCAnswer(
-                                        type,
-                                        rawAnswer.getString("value"),
-                                    ))
-                            }
-                        }
-                    }
-                    lcScripts.add(LCScript(
-                        rawScript.getString("id"),
-                        rawScript.getString("name"),
-                        rawScript.getString("next_action"),
-                        answers,
-                        buttonActions,
-                    ))
-                }
                 SocketConstant.CLIENT_URL_SOCKET = dataResp.getString("domain_socket")
                 LiveChatAPI.setUrl(SocketConstant.CLIENT_URL_SOCKET)
                 accessToken = dataResp.getString("access_token")
@@ -463,23 +404,6 @@ object LiveChatSDK {
                         val sessionId: String = jsonData.getString("session_id")
                         val visitorJid: String = jsonData.getString("visitor_jid")
                         observingInitialSession(success, LCSession(sessionId,visitorJid))
-                    }
-                    socketClient!!.on(SocketConstant.RESTART_SCRIPTING) {
-                            data ->
-                        LCLog.logI("RESTART_SCRIPTING: ${data[0]}")
-                        val rawScript = data[0] as JSONObject
-                        val rawButtonActions = rawScript.optJSONArray("button_action")
-                        val buttonActions = ArrayList<LCButtonAction>()
-                        if(rawButtonActions != null){
-                            for (j in 0 ..< rawButtonActions.length()){
-                                val rawButtonAction = rawButtonActions.getJSONObject(j)
-                                buttonActions.add(LCButtonAction(
-                                    rawButtonAction.getString("button"),
-                                    rawButtonAction.getString("next"),
-                                ))
-                            }
-                            observingRestartScripting(buttonActions)
-                        }
                     }
                     socketClient!!.on(SocketConstant.RESULT_GET_MESSAGES) {
                             data ->
