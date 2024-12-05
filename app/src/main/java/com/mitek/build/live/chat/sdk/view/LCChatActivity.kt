@@ -19,7 +19,6 @@ import com.mitek.build.live.chat.sdk.model.chat.LCMessageEntity
 import com.mitek.build.live.chat.sdk.model.chat.LCMessageSend
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
 import com.mitek.build.live.chat.sdk.model.chat.LCStatusMessage
-import com.mitek.build.live.chat.sdk.model.internal.LCButtonAction
 import com.mitek.build.live.chat.sdk.util.FileUtils
 import com.mitek.build.live.chat.sdk.util.LCLog.logI
 import com.mitek.build.live.chat.sdk.view.adapter.MessageAdapter
@@ -59,7 +58,6 @@ class LCChatActivity : AppCompatActivity() {
                             this@LCChatActivity,
                             messagesGlo,
                             LiveChatSDK.getLCSession(),
-                            LiveChatFactory.getScripts(),
                         )
                         rvChat.adapter = adapter
                         rvChat.smoothScrollToPosition(adapter.itemCount)
@@ -98,13 +96,6 @@ class LCChatActivity : AppCompatActivity() {
                             adapter.notifyItemRangeChanged(0,messages.size)
                         }
                     }
-                }
-            }
-
-            override fun onRestartScripting(buttonActions: ArrayList<LCButtonAction>) {
-                super.onRestartScripting(buttonActions)
-                runOnUiThread {
-                    adapter.restartScripting(buttonActions)
                 }
             }
 
@@ -164,33 +155,7 @@ class LCChatActivity : AppCompatActivity() {
         btnBack = findViewById(R.id.back_img)
         btnSend.setOnClickListener {
             if (edtMessage.text.toString().isEmpty()) return@setOnClickListener
-            if (!adapter.isWaiting()) adapter.setIsScripting(false)
-            if (adapter.getIndexWait() < adapter.getCurrScript().answers.size) {
-                val answer = adapter.getCurrScript().answers[adapter.getIndexWait()]
-                if (answer.type == "assign" || answer.type == "assign_team") {
-                    adapter.setIsScripting(false)
-                    adapter.setIndexWait(0)
-                    adapter.setIsWaiting(false)
-                    LiveChatFactory.sendMessage(
-                        LCMessageSend(edtMessage.text.toString()),
-                        if (adapter.isWaiting()) adapter.getIndexWait() else null,
-                        if (adapter.isWaiting()) adapter.getCurrScript().id else null,
-                    )
-                    edtMessage.text.clear()
-                    return@setOnClickListener
-                }
-                adapter.setIndexWait(adapter.getIndexWait() + 1)
-            } else {
-                adapter.setIsWaiting(false)
-            }
-            LiveChatFactory.sendMessage(
-                LCMessageSend(edtMessage.text.toString()),
-                if (adapter.isWaiting()) adapter.getIndexWait() else null,
-                if (adapter.isWaiting()) adapter.getCurrScript().id else null,
-            )
-            if(adapter.getIndexWait() == adapter.getCurrScript().answers.size){
-                adapter.setIsWaiting(false)
-            }
+            LiveChatFactory.sendMessage(LCMessageSend(edtMessage.text.toString()))
             edtMessage.text.clear()
         }
 

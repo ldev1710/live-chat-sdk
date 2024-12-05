@@ -4,7 +4,6 @@ import com.mitek.build.live.chat.sdk.model.internal.InitialEnum
 import com.mitek.build.live.chat.sdk.model.internal.LCAccount
 import com.mitek.build.live.chat.sdk.model.chat.LCMessage
 import com.mitek.build.live.chat.sdk.model.chat.LCSendMessageEnum
-import com.mitek.build.live.chat.sdk.model.internal.LCButtonAction
 import com.mitek.build.live.chat.sdk.model.user.LCSession
 
 
@@ -15,5 +14,4 @@ interface LiveChatObserve {
     fun onInitialSessionStateChanged(success: Boolean,lcSession: LCSession)
     fun onGotDetailConversation(messages: ArrayList<LCMessage>)
     fun onSendMessageStateChange(state: LCSendMessageEnum, message: LCMessage?,errorMessage: String?,mappingId: String?)
-    fun onRestartScripting(buttonActions: ArrayList<LCButtonAction>)
 }
