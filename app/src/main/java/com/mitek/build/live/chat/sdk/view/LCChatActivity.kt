@@ -148,6 +148,9 @@ class LCChatActivity : AppCompatActivity() {
                 logI("onReceiveMessage: $lcMessage")
                 messagesGlo.add(LCMessageEntity(lcMessage=lcMessage, LCStatusMessage.sent,null))
                 runOnUiThread {
+                    if(lcMessage.from!!.id != "0"){
+                        adapter.setIsScripting(false)
+                    }
                     adapter.notifyDataSetChanged()
                     rvChat.smoothScrollToPosition(adapter.itemCount)
                 }
