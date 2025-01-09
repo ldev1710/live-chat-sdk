@@ -8,6 +8,8 @@ object SocketConstant {
     var RESULT_GET_MESSAGES = "responseGetMessages"
     var RESULT_AUTHENTICATION = "responseAuthenSDK"
     var SEND_MESSAGE = "messageChat"
+    var GET_SCRIPT = "getScript"
+    var RESPONSE_GET_SCRIPT = "responseGetScript"
     var RECEIVE_MESSAGE = "responseLiveMessageChat"
     var CONFIRM_SEND_MESSAGE = "confirmMessageChat"
     var JOIN_CLIENT = "join"
