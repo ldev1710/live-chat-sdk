@@ -34,7 +34,7 @@ class LCChatActivity : AppCompatActivity() {
     private lateinit var btnSend: ImageView
     private lateinit var btnAttach: ImageView
     private lateinit var btnBack: ImageView
-    private var page :Int = 1
+    private var page :Int = 0
     private var limit = 10
     private var isInit = true
     private var isCanLoadMore = true
